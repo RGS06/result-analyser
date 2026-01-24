@@ -438,6 +438,17 @@ def main():
             st.code("\n".join(original_columns), language="text")
             st.markdown(f"**Total Columns:** {len(original_columns)}")
             st.markdown(f"**Filtered Columns:** {len(filtered.columns)}")
+            
+            # Show Raw OCR text if PDF was uploaded
+            if uploaded:
+                st.markdown("---")
+                st.markdown("**Raw OCR/PDF Text:**")
+                from src.ocr import extract_text_from_pdf
+                for f in uploaded:
+                    if f.name.lower().endswith('.pdf'):
+                        f.seek(0)
+                        raw_txt = extract_text_from_pdf(f.read())
+                        st.text_area(f"Text from {f.name}", raw_txt, height=200)
 
     # Compute analytics
     per_student = compute_student_status(

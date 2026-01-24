@@ -13,19 +13,18 @@ def parse_vtu_text_regex(text: str) -> list[dict]:
         list[dict]: A list of dictionaries, each containing student and subject details.
     """
     # Regex to find student blocks
-    # Matches USN and Name, even with slight variations in labeling or spacing
+    # Fuzzy matching for "University Seat Number" and "Student Name"
     student_header_pattern = re.compile(
-        r"(?:University Seat Number|USN)\s*[:\-]?\s*([A-Z0-9]+).*?"
-        r"(?:Student Name|Name)\s*[:\-]?\s*([^\n\r]+)",
+        r"(?:Univ.*?Seat.*?Number|USN)\s*[:\-]?\s*([A-Z0-9]+).*?"
+        r"(?:Stud.*?Name|Name)\s*[:\-]?\s*([^\n\r]+)",
         re.IGNORECASE | re.DOTALL
     )
     
     # Regex to extract subjects and marks from a block
-    # Pattern: [Code] [Name...] [Int] [Ext] [Tot] [Result]
-    # Anchored to handle multi-line text more reliably, allowing for leading whitespace
+    # Less strict: allows optional leading whitespace and captures even if line markers are imperfect
     subject_row_pattern = re.compile(
-        r"^\s*([A-Z0-9]{5,10})\s+(.*?)\s+(\d+|A|AB|NP|--)\s+(\d+|A|AB|NP|--)\s+(\d+|A|AB|NP|--)\s+([A-Z/]+)\s*$",
-        re.MULTILINE | re.IGNORECASE
+        r"([A-Z0-9]{5,10})\s+(.*?)\s+(\d+|A|AB|NP|--)\s+(\d+|A|AB|NP|--)\s+(\d+|A|AB|NP|--)\s+([A-Z/PFWL]+)",
+        re.IGNORECASE
     )
     
     extracted_data = []
