@@ -977,22 +977,38 @@ def main():
     st.markdown(
         textwrap.dedent("""
         <div style="text-align: center; padding: 2rem; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid #334155;">
-            <p style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Project Team Members</p>
+            <h3 style="color: #38bdf8; margin-bottom: 0.5rem;">Project Team</h3>
+            <p style="color: #94a3b8; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem;">Student Contributors</p>
+            
             <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 0.6rem 1.2rem; border-radius: 8px; color: #cbd5e1; font-size: 0.9rem; border: 1px solid #334155;">Aditya K Shenava</div>
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 0.6rem 1.2rem; border-radius: 8px; color: #cbd5e1; font-size: 0.9rem; border: 1px solid #334155;">Amith Suvarna</div>
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 0.6rem 1.2rem; border-radius: 8px; color: #cbd5e1; font-size: 0.9rem; border: 1px solid #334155;">Prajanth</div>
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 0.6rem 1.2rem; border-radius: 8px; color: #cbd5e1; font-size: 0.9rem; border: 1px solid #334155;">Preetham</div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid #334155; min-width: 220px;">
+                    <div style="color: #38bdf8; font-size: 0.75rem; font-weight: 700;">4MW24CS400</div>
+                    <div style="color: #f8fafc; font-size: 1rem;">Aditya K Shenava</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid #334155; min-width: 220px;">
+                    <div style="color: #38bdf8; font-size: 0.75rem; font-weight: 700;">4MW24CS401</div>
+                    <div style="color: #f8fafc; font-size: 1rem;">Amith Suvarna</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid #334155; min-width: 220px;">
+                    <div style="color: #38bdf8; font-size: 0.75rem; font-weight: 700;">4MW24CS403</div>
+                    <div style="color: #f8fafc; font-size: 1rem;">Prajanth</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid #334155; min-width: 220px;">
+                    <div style="color: #38bdf8; font-size: 0.75rem; font-weight: 700;">4MW24CS404</div>
+                    <div style="color: #f8fafc; font-size: 1rem;">Preetham</div>
+                </div>
             </div>
             
             <div style="border-top: 1px solid #334155; padding-top: 1.5rem;">
-                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;">Lead Developer & Supervisor</p>
-                <h4 style="color: #38bdf8; margin: 0; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.5px;">Raghavendra G S</h4>
-                <p style="color: #e2e8f0; font-size: 1rem; margin: 0.4rem 0;">Department of Computer Science and Engineering</p>
-                <p style="color: #94a3b8; font-size: 0.85rem;">Madhwa Vadiraja Institute of Technology and Management (MVITM), Bantakal</p>
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.3rem;">Guide</p>
+                <h4 style="color: #f8fafc; margin: 0; font-size: 1.4rem; font-weight: 700;">Raghavendra G S</h4>
+                <div style="margin-top: 1rem; color: #cbd5e1;">
+                    <span style="color: #38bdf8; font-weight: 600;">Department:</span> Computer Science and Engineering<br>
+                    <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology and Management (SMVITM), Bantakal
+                </div>
             </div>
             
-            <p style="margin-top: 2rem; color: #475569; font-size: 0.75rem;">© 2026 VTU Result Analyser. All rights reserved.</p>
+            <p style="margin-top: 2.5rem; color: #475569; font-size: 0.75rem;">© 2026 VTU Result Analyser. All rights reserved.</p>
         </div>
         """),
         unsafe_allow_html=True
