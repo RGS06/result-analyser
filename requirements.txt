@@ -9,8 +9,8 @@ camelot-py
 tabula-py
 opencv-python-headless
 pdfplumber
-pytesseract
-pdf2image
+pytesseract>=0.3.10
+pdf2image>=1.17.0
 
 
 

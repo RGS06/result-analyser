@@ -2,6 +2,29 @@ import io
 import os
 import textwrap
 
+def check_dependencies():
+    missing = []
+    try:
+        import pytesseract
+    except ImportError:
+        missing.append("pytesseract")
+    try:
+        import pdf2image
+    except ImportError:
+        missing.append("pdf2image")
+    try:
+        import cv2
+    except ImportError:
+        missing.append("opencv-python-headless")
+    
+    if missing:
+        import streamlit as st
+        st.error(f"❌ **Missing Dependencies**: {', '.join(missing)}")
+        st.info("It looks like Streamlit Cloud is still installing packages. Please wait a minute and **Reboot the App** from the Streamlit menu (bottom right).")
+        st.stop()
+
+check_dependencies()
+
 from typing import Tuple, Dict
 
 import streamlit as st
