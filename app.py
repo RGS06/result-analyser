@@ -972,45 +972,44 @@ def main():
             )
 
 
-    # --- Footer Section ---
-    st.markdown("<br><hr><br>", unsafe_allow_html=True)
+    # --- Compact Footer Section ---
+    st.markdown("<br><hr style='border: 0.5px solid #334155;'><br>", unsafe_allow_html=True)
     st.markdown(
-        textwrap.dedent("""
-        <div style="text-align: center; padding: 2rem; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid #334155;">
-            <h3 style="color: #38bdf8; margin-bottom: 0.5rem;">Project Team</h3>
-            <p style="color: #94a3b8; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem;">Student Contributors</p>
+        """
+        <div style="text-align: center; padding: 1.5rem; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1.1rem;">Project Team</h4>
+            <p style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Student Contributors</p>
             
-            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid #334155; min-width: 220px;">
-                    <div style="color: #38bdf8; font-size: 0.75rem; font-weight: 700;">4MW24CS400</div>
-                    <div style="color: #f8fafc; font-size: 1rem;">Aditya K Shenava</div>
+            <div style="display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #334155;">
+                    <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700; display: block;">4MW24CS400</span>
+                    <span style="color: #f8fafc; font-size: 0.9rem;">Aditya K Shenava</span>
                 </div>
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid #334155; min-width: 220px;">
-                    <div style="color: #38bdf8; font-size: 0.75rem; font-weight: 700;">4MW24CS401</div>
-                    <div style="color: #f8fafc; font-size: 1rem;">Amith Suvarna</div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #334155;">
+                    <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700; display: block;">4MW24CS401</span>
+                    <span style="color: #f8fafc; font-size: 0.9rem;">Amith Suvarna</span>
                 </div>
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid #334155; min-width: 220px;">
-                    <div style="color: #38bdf8; font-size: 0.75rem; font-weight: 700;">4MW24CS403</div>
-                    <div style="color: #f8fafc; font-size: 1rem;">Prajanth</div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #334155;">
+                    <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700; display: block;">4MW24CS403</span>
+                    <span style="color: #f8fafc; font-size: 0.9rem;">Prajanth</span>
                 </div>
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem 1.5rem; border-radius: 8px; border: 1px solid #334155; min-width: 220px;">
-                    <div style="color: #38bdf8; font-size: 0.75rem; font-weight: 700;">4MW24CS404</div>
-                    <div style="color: #f8fafc; font-size: 1rem;">Preetham</div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #334155;">
+                    <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700; display: block;">4MW24CS404</span>
+                    <span style="color: #f8fafc; font-size: 0.9rem;">Preetham</span>
                 </div>
             </div>
             
-            <div style="border-top: 1px solid #334155; padding-top: 1.5rem;">
-                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.3rem;">Guide</p>
-                <h4 style="color: #f8fafc; margin: 0; font-size: 1.4rem; font-weight: 700;">Raghavendra G S</h4>
-                <div style="margin-top: 1rem; color: #cbd5e1;">
+            <div style="border-top: 1px solid #334155; padding-top: 1rem;">
+                <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0px;">Guide</p>
+                <h4 style="color: #f8fafc; margin: 0; font-size: 1.2rem; font-weight: 700;">Raghavendra G S</h4>
+                <p style="margin-top: 5px; color: #cbd5e1; font-size: 0.85rem; line-height: 1.4;">
                     <span style="color: #38bdf8; font-weight: 600;">Department:</span> Computer Science and Engineering<br>
-                    <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology and Management (SMVITM), Bantakal
-                </div>
+                    <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology & Management (SMVITM), Bantakal
+                </p>
             </div>
-            
-            <p style="margin-top: 2.5rem; color: #475569; font-size: 0.75rem;">© 2026 VTU Result Analyser. All rights reserved.</p>
+            <p style="margin-top: 1.5rem; color: #475569; font-size: 0.7rem;">© 2026 VTU Result Analyser</p>
         </div>
-        """),
+        """,
         unsafe_allow_html=True
     )
 
