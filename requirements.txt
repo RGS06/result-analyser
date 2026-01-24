@@ -1,0 +1,16 @@
+streamlit
+pandas
+numpy
+openpyxl
+xlsxwriter
+plotly
+reportlab
+camelot-py
+tabula-py
+opencv-python-headless
+pdfplumber
+pytesseract
+pdf2image
+
+
+

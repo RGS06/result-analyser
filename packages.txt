@@ -1,0 +1,5 @@
+default-jre
+poppler-utils
+ghostscript
+libgl1-mesa-glx
+tesseract-ocr
