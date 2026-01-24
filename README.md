@@ -120,6 +120,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-**Lead Developer & Supervisor:** Raghavendra G S
+**Guide:** Raghavendra G S
 **Department:** Computer Science and Engineering
-**College:** Madhwa Vadiraja Institute of Technology and Management (MVITM), Bantakal
+**College:** Shri Madhwa Vadiraja Institute of Technology and Management (SMVITM), Bantakal
