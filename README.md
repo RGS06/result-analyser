@@ -109,15 +109,17 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 👨‍🎓 Project Team
 
-**Developed by:** Raghavendra G S
-**Department:** Computer Science and Engineering
-**College:** Madhwa Vadiraja Institute of Technology and Management (MVITM), Bantakal
-
 ### Student Contributors
 
 | USN | Name |
 |:---:|:---|
 | 4MW24CS400 | Aditya K Shenava |
+| 4MW24CS401 | Amith Suvarna |
+| 4MW24CS403 | Prajanth |
 | 4MW24CS404 | Preetham |
 
+---
 
+**Lead Developer & Supervisor:** Raghavendra G S
+**Department:** Computer Science and Engineering
+**College:** Madhwa Vadiraja Institute of Technology and Management (MVITM), Bantakal
