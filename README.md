@@ -121,5 +121,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ---
 
 **Guide:** Raghavendra G S
+
 **Department:** Computer Science and Engineering
 **College:** Shri Madhwa Vadiraja Institute of Technology and Management (SMVITM), Bantakal
