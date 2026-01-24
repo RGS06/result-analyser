@@ -11,9 +11,9 @@
 
 
 
-A powerful, modern web application designed to automate the processing and analysis of VTU result files. Transform raw PDF/Excel data into actionable insights, visual dashboards, and comprehensive reports in seconds.
+A powerful, modern web application designed to automate the processing and analysis of VTU result files. Transform raw PDF/Excel data into actionable insights, visual dashboards, and comprehensive reports in seconds. Supporting both digital and scanned PDFs via integrated OCR.
 
-[View Demo](https://vtu-result-analyser.streamlit.app) · [Report Bug](https://github.com/yourusername/vtu-result-analyser/issues) · [Request Feature](https://github.com/yourusername/vtu-result-analyser/issues)
+[View Demo](https://result-analyser.streamlit.app) · [Report Bug](https://github.com/RGS06/result-analyser/issues) · [Request Feature](https://github.com/RGS06/result-analyser/issues)
 
 </div>
 
@@ -57,8 +57,8 @@ Ensure you have the following installed:
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/vtu-result-analyser.git
-    cd vtu-result-analyser/miniproject
+    git clone https://github.com/RGS06/result-analyser.git
+    cd result-analyser
     ```
 
 2.  **Install dependencies**
@@ -107,15 +107,17 @@ Contributions are what make the open-source community such an amazing place to l
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-## 👨‍🎓 Student Contributors
+## 👨‍🎓 Project Team
 
-A special thanks to the student contributors who helped make this project possible:
+**Developed by:** Raghavendra G S
+**Department:** Computer Science and Engineering
+**College:** Madhwa Vadiraja Institute of Technology and Management (MVITM), Bantakal
+
+### Student Contributors
 
 | USN | Name |
 |:---:|:---|
 | 4MW24CS400 | Aditya K Shenava |
-| 4MW24CS401 | Amith Suvarna |
-| 4MW24CS403 | Prajanth |
 | 4MW24CS404 | Preetham |
 
 

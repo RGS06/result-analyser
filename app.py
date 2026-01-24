@@ -972,5 +972,34 @@ def main():
             )
 
 
+    # --- Footer Section ---
+    st.markdown("<br><hr><br>", unsafe_allow_html=True)
+    st.markdown(
+        textwrap.dedent("""
+        <div style="text-align: center; padding: 2rem; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid #334155;">
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;">Developed with ❤️ by</p>
+            <h4 style="color: #38bdf8; margin: 0; font-size: 1.2rem;">Raghavendra G S</h4>
+            <p style="color: #e2e8f0; font-size: 1rem; margin: 0.5rem 0;">Department of Computer Science and Engineering</p>
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 1.5rem;">Madhwa Vadiraja Institute of Technology and Management (MVITM), Bantakal</p>
+            
+            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; border-top: 1px solid #334155; padding-top: 1.5rem;">
+                <div style="text-align: left;">
+                    <p style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; text-align: center;">Project Team Members</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; color: #cbd5e1; font-size: 0.85rem;">
+                        <div style="background: rgba(15, 23, 42, 0.5); padding: 0.5rem 1rem; border-radius: 6px;">Aditya K Shenava</div>
+                        <div style="background: rgba(15, 23, 42, 0.5); padding: 0.5rem 1rem; border-radius: 6px;">Amith Suvarna</div>
+                        <div style="background: rgba(15, 23, 42, 0.5); padding: 0.5rem 1rem; border-radius: 6px;">Prajanth</div>
+                        <div style="background: rgba(15, 23, 42, 0.5); padding: 0.5rem 1rem; border-radius: 6px;">Preetham</div>
+                    </div>
+                </div>
+            </div>
+            
+            <p style="margin-top: 2rem; color: #475569; font-size: 0.75rem;">© 2026 VTU Result Analyser. All rights reserved.</p>
+        </div>
+        """),
+        unsafe_allow_html=True
+    )
+
+
 if __name__ == "__main__":
     main()
