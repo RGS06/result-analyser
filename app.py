@@ -1041,7 +1041,6 @@ def main():
 
     # Additional export options
     with st.expander("📤 More Export Options", expanded=False):
-        # ---------------- FIXED: RE-LAYOUT TO GRID TO FIT NEW BUTTONS ----------------
         row1_col1, row1_col2 = st.columns(2)
         row2_col1, row2_col2 = st.columns(2)
 
@@ -1081,11 +1080,11 @@ def main():
                     
                     output.seek(0)
                     st.download_button(
-                        label="📑 Section Summary (Excel)",
+                        label="📑 Section Student Summary (Excel)",
                         data=output,
-                        file_name="section_summary.xlsx",
+                        file_name="section_student_summary.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        help="Each sheet contains the summary (Pass/Fail, SGPA) for one section."
+                        help="Student-wise results grouped by section sheets."
                     )
                 except Exception as e:
                     st.error(f"Could not generate section summary: {e}")
@@ -1093,42 +1092,46 @@ def main():
                 st.info("Section info unavailable")
         
         with row2_col2:
-            # ---------------- NEW FEATURE: Section Broadsheet (Matrix) ----------------
+            # ---------------- NEW FEATURE: Section-wise Subject Stats (User Request) ----------------
             if "Section" in filtered.columns:
                 try:
-                    output_matrix = io.BytesIO()
-                    with pd.ExcelWriter(output_matrix, engine='xlsxwriter') as writer:
+                    output_subject_stats = io.BytesIO()
+                    with pd.ExcelWriter(output_subject_stats, engine='xlsxwriter') as writer:
                         unique_sections = sorted(filtered["Section"].dropna().unique())
                         for sec in unique_sections:
-                            # Filter raw data for section
-                            sec_raw = filtered[filtered["Section"] == sec]
+                            # 1. Filter for section
+                            sec_data = filtered[filtered["Section"] == sec]
+
+                            # 2. Group by Subject Code and Name
+                            stats = sec_data.groupby([config["subject_code_col"], config["subject_name_col"]]).agg(
+                                Total_Students=('USN', 'count'),
+                                Absent=('Result', lambda x: (x.astype(str).str.upper() == 'A').sum()),
+                                Passed=('Result', lambda x: x.astype(str).str.upper().str.contains(r'PASS|PASSED|^P$').sum())
+                            ).reset_index()
+
+                            # 3. Calculate Derived Columns
+                            stats['Appeared'] = stats['Total_Students'] - stats['Absent']
+                            stats['Failed'] = stats['Appeared'] - stats['Passed']
+                            stats['Pass_Percentage'] = (stats['Passed'] / stats['Appeared'].replace(0, pd.NA) * 100).fillna(0).round(2)
+
+                            # 4. Reorder Columns for Report
+                            stats = stats[[config["subject_code_col"], config["subject_name_col"], 
+                                           'Total_Students', 'Absent', 'Appeared', 'Passed', 'Failed', 'Pass_Percentage']]
+
+                            # 5. Write to Sheet
+                            safe_sheet_name = f"Section_{sec}"[:31].replace('[', '').replace(']', '').replace(':', '')
+                            stats.to_excel(writer, sheet_name=safe_sheet_name, index=False)
                             
-                            # Pivot to Matrix: Rows=USN/Name, Cols=SubjectCode, Values=[Total, Result]
-                            pivot_df = sec_raw.pivot_table(
-                                index=['USN', 'Name'], 
-                                columns=config['subject_code_col'], 
-                                values=[config['total_col'], config['result_col']],
-                                aggfunc='first'
-                            )
-                            
-                            # Flatten MultiIndex Columns (e.g. ('Total', '18CS51') -> '18CS51_Total')
-                            # We swap levels to group by Subject Code first
-                            pivot_df = pivot_df.swaplevel(0, 1, axis=1).sort_index(axis=1)
-                            pivot_df.columns = [f"{col[0]}_{col[1]}" for col in pivot_df.columns]
-                            
-                            safe_sheet_name = f"Matrix_{sec}"[:31].replace('[', '').replace(']', '').replace(':', '')
-                            pivot_df.to_excel(writer, sheet_name=safe_sheet_name)
-                            
-                    output_matrix.seek(0)
+                    output_subject_stats.seek(0)
                     st.download_button(
-                        label="📉 Section Broadsheet (Matrix)",
-                        data=output_matrix,
-                        file_name="section_broadsheet_matrix.xlsx",
+                        label="📊 Section-wise Subject Stats (Excel)",
+                        data=output_subject_stats,
+                        file_name="section_subject_stats.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        help="Detailed matrix view: Students vs Subjects (Total & Result) for each section."
+                        help="Subject-wise performance (Total, Absent, Present, Pass, Fail, %) separated by Section sheets."
                     )
                 except Exception as e:
-                    st.error(f"Could not generate matrix: {e}")
+                    st.error(f"Could not generate subject stats: {e}")
             else:
                 st.info("Section info unavailable")
 
