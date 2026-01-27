@@ -414,6 +414,14 @@ def main():
                 default=semesters,
                 help="Choose specific semesters to analyze"
             )
+        with col2:
+            sections = sorted(df["Section"].dropna().unique()) if "Section" in df.columns else []
+            sel_section = st.multiselect(
+                "🏷 Select Sections",
+                options=sections,
+                default=sections,
+                help="Filter students by section"
+            )    
 
     filtered = df.copy()
     # Apply filters only when the user has selected specific values
@@ -421,6 +429,8 @@ def main():
         filtered = filtered[filtered[config["subject_code_col"]].isin(sel_codes)]
     if sel_sem:
         filtered = filtered[filtered[config["semester_col"]].isin(sel_sem)]
+    if "Section" in filtered.columns and sel_section:
+        filtered = filtered[filtered["Section"].isin(sel_section)]
 
     st.markdown("<br><br>", unsafe_allow_html=True)
 
@@ -681,7 +691,7 @@ def main():
     st.markdown("### 📊 Analysis Dashboard")
 
     # KPI Cards in a responsive grid
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         st.markdown(
@@ -715,6 +725,16 @@ def main():
             """),
             unsafe_allow_html=True,
         )
+    with col4:
+        st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">🚫 Absent Students</div>
+            <div class="kpi-value" style="color:#f59e0b;">{absent_students}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # Enhanced insights section
     with st.expander("📈 Detailed Insights", expanded=True):
@@ -756,7 +776,7 @@ def main():
     pie_df = pie_df[pie_df['Status'].notnull() & (pie_df['Status'].astype(str).str.strip() != '')]
 
     # Always show both PASS and FAIL, even if one is zero
-    status_order = ['PASS', 'FAIL']
+    status_order = ['PASS', 'FAIL', 'ABSENT']
     status_counts = pie_df['Status'].value_counts().reindex(status_order, fill_value=0).reset_index()
     status_counts.columns = ['Status', 'Count']
     total = status_counts['Count'].sum()
@@ -768,7 +788,8 @@ def main():
         import plotly.graph_objects as go
         pie_colors = [
     "#10b981" if s == "PASS"
-    else "#ef4444"
+    else "#ef4444" if s == "FAIL"
+    else "#f59e0b"
     for s in status_counts["Status"]
 ]
 
@@ -842,7 +863,7 @@ def main():
 
     with tab1:
         st.markdown("#### 👥 Per-Student Status Overview")
-        st.dataframe(per_student, use_container_width=True)
+        st.dataframe(per_student.sort_values("Section"), use_container_width=True)
 
     with tab2:
         st.markdown("#### 📚 Individual Student Subject-wise Results")
