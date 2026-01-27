@@ -510,7 +510,12 @@ def main():
         total_col=config["total_col"],
         result_col=config["result_col"]
     )
-
+    if "Section" in filtered.columns:
+        per_student = per_student.merge(
+            filtered[["USN", "Section"]].drop_duplicates(),
+            on="USN",
+            how="left"
+        )
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     # --- Toppers Section ---
