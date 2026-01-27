@@ -61,7 +61,7 @@ def _show_header() -> bool:
     st.markdown(
         """
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap');
 
         :root {
             /* Palette: Modern Slate & Indigo */
@@ -154,7 +154,6 @@ def _show_header() -> bool:
         }
 
         /* 4. Buttons (Custom Overrides) */
-        /* Primary Action Buttons (Upload, etc.) */
         .stButton button {
             background: var(--surface-light) !important;
             color: var(--text-primary) !important;
@@ -172,7 +171,6 @@ def _show_header() -> bool:
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
 
-        /* Download Buttons - Distinguish them */
         .stDownloadButton button {
             background: transparent !important;
             border: 1px solid var(--info-color) !important;
@@ -197,8 +195,6 @@ def _show_header() -> bool:
             border-color: #6366f1;
             background: rgba(30, 41, 59, 0.8);
         }
-        
-        /* Selectboxes & Multiselects */
         div[data-baseweb="select"] > div {
             background-color: var(--surface-dark) !important;
             border-color: var(--border-color) !important;
@@ -206,14 +202,7 @@ def _show_header() -> bool:
             color: var(--text-primary) !important;
         }
         
-        /* 6. Dataframes & Tables */
-        .stDataFrame {
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        /* 7. Tabs */
+        /* 6. Tabs & Utilities */
         .stTabs [data-baseweb="tab-list"] {
             gap: 1rem;
             border-bottom: 1px solid var(--border-color);
@@ -228,14 +217,11 @@ def _show_header() -> bool:
             color: #6366f1 !important;
             border-bottom: 2px solid #6366f1 !important;
         }
-
-        /* 8. Utility Classes */
         .section-divider {
             margin: 3rem 0;
             border-top: 1px solid var(--border-color);
         }
         
-        /* Hide Streamlit Branding */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         
@@ -338,43 +324,58 @@ def main():
 
     if not uploaded:
         st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
-        # --- FOOTER DISPLAY ON LANDING PAGE ---
+        
+        # --- FOOTER: CREDIT CARD DESIGN (Small & Centered) ---
         st.markdown(
-            """
-            <div style="text-align: center; padding: 2rem; background: var(--surface-dark); border-radius: 12px; border: 1px solid var(--border-color); margin-top: 3rem;">
-                <h4 style="color: #38bdf8; margin-bottom: 0.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Project Team</h4>
-                <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 1.5rem;">Student Contributors</p>
+            textwrap.dedent("""
+            <div style="
+                max-width: 420px;
+                margin: 4rem auto 2rem auto;
+                padding: 1.5rem;
+                background: linear-gradient(135deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6));
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 16px;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(12px);
+                font-family: 'Inter', sans-serif;
+                position: relative;
+                overflow: hidden;
+            ">
+                <div style="
+                    position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+                    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+                    pointer-events: none;
+                "></div>
 
-                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS400</span>
-                        <span style="color: #f8fafc; font-size: 0.95rem;">Aditya K Shenava</span>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; position: relative;">
+                    <div>
+                        <div style="color: #64748b; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;">PROJECT TEAM</div>
+                        <div style="color: #f1f5f9; font-weight: 700; font-size: 1.1rem; margin-top: 0.2rem; letter-spacing: -0.5px;">VTU Analytics</div>
                     </div>
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS401</span>
-                        <span style="color: #f8fafc; font-size: 0.95rem;">Amith Suvarna</span>
-                    </div>
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS403</span>
-                        <span style="color: #f8fafc; font-size: 0.95rem;">Prajanth</span>
-                    </div>
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS404</span>
-                        <span style="color: #f8fafc; font-size: 0.95rem;">Preetham</span>
+                    <div style="text-align: right;">
+                        <div style="color: #38bdf8; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px;">GUIDE</div>
+                        <div style="color: #cbd5e1; font-size: 0.8rem; margin-top: 0.1rem;">Raghavendra G S</div>
                     </div>
                 </div>
 
-                <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; max-width: 600px; margin: 0 auto;">
-                    <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Guide</p>
-                    <h4 style="color: #f8fafc; margin: 0; font-size: 1.3rem; font-weight: 700;">Raghavendra G S</h4>
-                    <p style="margin-top: 0.5rem; color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
-                        <span style="color: #38bdf8; font-weight: 600;">Department:</span> Computer Science and Engineering<br>
-                        <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology & Management (SMVITM), Bantakal
-                    </p>
+                <div style="margin-bottom: 1.5rem; position: relative;">
+                    <div style="color: #64748b; font-size: 0.6rem; margin-bottom: 0.5rem; font-weight: 600;">CONTRIBUTORS</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        <span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Aditya K S</span>
+                        <span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Amith S</span>
+                        <span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Prajanth</span>
+                        <span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Preetham</span>
+                    </div>
                 </div>
-                <p style="margin-top: 2rem; color: #475569; font-size: 0.75rem;">© 2025 - 2026 VTU Result Analyser</p>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem; position: relative;">
+                     <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 500;">
+                        SMVITM • CSE DEPT • 2025
+                     </div>
+                     <div style="width: 30px; height: 20px; background: linear-gradient(135deg, #fbbf24, #d97706); border-radius: 4px; opacity: 0.8;"></div>
+                </div>
             </div>
-            """,
+            """),
             unsafe_allow_html=True
         )
         return
@@ -525,11 +526,11 @@ def main():
         <div style="background: var(--surface-dark); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
             <div style="display:flex; justify-content:space-between; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
                 <span>Passing Students</span>
-                <span style="color:#10b981; font-weight:700;">{status_counts[status_counts['Status']=='PASS']['Count'].sum()}</span>
+                <span style="color:#10b981; font-weight:700;">{status_counts[status_counts['Status']=='PASS']['Count'].sum() if not status_counts.empty else 0}</span>
             </div>
             <div style="display:flex; justify-content:space-between;">
                 <span>Failing Students</span>
-                <span style="color:#ef4444; font-weight:700;">{status_counts[status_counts['Status']=='FAIL']['Count'].sum()}</span>
+                <span style="color:#ef4444; font-weight:700;">{status_counts[status_counts['Status']=='FAIL']['Count'].sum() if not status_counts.empty else 0}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -672,44 +673,22 @@ def main():
                 except: st.error("Error generating report")
             else: st.caption("No Section Data")
 
-    # --- Footer ---
-    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
+    # --- Footer (Visible on Analysis Page as well) ---
+    st.markdown("<div style='margin-top: 5rem;'></div>", unsafe_allow_html=True)
     st.markdown(
-        """
-        <div style="text-align: center; padding: 2rem; background: var(--surface-dark); border-radius: 12px; border: 1px solid var(--border-color);">
-            <h4 style="color: #38bdf8; margin-bottom: 0.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Project Team</h4>
-            <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 1.5rem;">Student Contributors</p>
-
-            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS400</span>
-                    <span style="color: #f8fafc; font-size: 0.95rem;">Aditya K Shenava</span>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS401</span>
-                    <span style="color: #f8fafc; font-size: 0.95rem;">Amith Suvarna</span>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS403</span>
-                    <span style="color: #f8fafc; font-size: 0.95rem;">Prajanth</span>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS404</span>
-                    <span style="color: #f8fafc; font-size: 0.95rem;">Preetham</span>
-                </div>
-            </div>
-
-            <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; max-width: 600px; margin: 0 auto;">
-                <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Guide</p>
-                <h4 style="color: #f8fafc; margin: 0; font-size: 1.3rem; font-weight: 700;">Raghavendra G S</h4>
-                <p style="margin-top: 0.5rem; color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
-                    <span style="color: #38bdf8; font-weight: 600;">Department:</span> Computer Science and Engineering<br>
-                    <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology & Management (SMVITM), Bantakal
-                </p>
-            </div>
-            <p style="margin-top: 2rem; color: #475569; font-size: 0.75rem;">© 2025 - 2026 VTU Result Analyser</p>
+        textwrap.dedent("""
+        <div style="
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            font-size: 0.8rem;
+        ">
+            <p style="margin-bottom: 0.5rem;">© 2025 - 2026 VTU Result Analyser</p>
+            <p style="font-size: 0.75rem; color: #64748b;">Department of CSE, SMVITM</p>
         </div>
-        """,
+        """),
         unsafe_allow_html=True
     )
 
