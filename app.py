@@ -1041,7 +1041,8 @@ def main():
 
     # Additional export options
     with st.expander("📤 More Export Options", expanded=False):
-        col1, col2 = st.columns(2)
+        # ---------------- FIXED: ADDED 3RD COLUMN FOR SECTION EXPORT ----------------
+        col1, col2, col3 = st.columns(3)
 
         with col1:
             # All students CSV
@@ -1064,6 +1065,35 @@ def main():
                 mime="text/csv",
                 help="Subject-wise performance data"
             )
+        
+        with col3:
+            # ---------------- NEW FEATURE: Section-wise Excel ----------------
+            if "Section" in per_student.columns:
+                try:
+                    output = io.BytesIO()
+                    # Create a multi-sheet Excel file
+                    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                        unique_sections = sorted(per_student["Section"].dropna().unique())
+                        for sec in unique_sections:
+                            # Filter data for this section
+                            sec_df = per_student[per_student["Section"] == sec]
+                            # Clean sheet name to be valid (max 31 chars, no special symbols)
+                            safe_sheet_name = f"Section_{sec}"[:31].replace('[', '').replace(']', '').replace(':', '')
+                            sec_df.to_excel(writer, sheet_name=safe_sheet_name, index=False)
+                    
+                    output.seek(0)
+                    st.download_button(
+                        label="📑 Section-wise Report (Excel)",
+                        data=output,
+                        file_name="section_wise_results.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        help="Download an Excel file with separate sheets for each section."
+                    )
+                except Exception as e:
+                    st.error(f"Could not generate section report: {e}")
+            else:
+                st.info("Section info unavailable")
+
 
     # --- Final Footer Section ---
     st.markdown("<br><hr style='border: 0.5px solid #334155;'><br>", unsafe_allow_html=True)
