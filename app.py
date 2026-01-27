@@ -44,9 +44,7 @@ def check_dependencies():
 check_dependencies()
 
 def _get_footer_html() -> str:
-    """Returns the HTML for the credit-card style footer. 
-    IMPORTANT: No indentation in the string to prevent Markdown code-block rendering.
-    """
+    """Returns the HTML for the credit-card style footer."""
     return """
 <div style="max-width: 420px; margin: 4rem auto 2rem auto; padding: 1.5rem; background: linear-gradient(135deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); backdrop-filter: blur(12px); font-family: 'Inter', sans-serif; position: relative; overflow: hidden;">
 <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); pointer-events: none;"></div>
@@ -74,6 +72,34 @@ def _get_footer_html() -> str:
 SMVITM • CSE DEPT • 2025
 </div>
 <div style="width: 30px; height: 20px; background: linear-gradient(135deg, #fbbf24, #d97706); border-radius: 4px; opacity: 0.8;"></div>
+</div>
+</div>
+"""
+
+def _get_sgpa_stats_html(avg_sgpa, max_sgpa, min_sgpa) -> str:
+    """Returns the HTML for SGPA stats cards without indentation issues."""
+    return f"""
+<div style="display: flex; flex-direction: column; gap: 1rem;">
+<div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+<div>
+<div style="font-size: 0.75rem; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px;">Average SGPA</div>
+<div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{avg_sgpa:.2f}</div>
+</div>
+<div style="font-size: 1.5rem;">📊</div>
+</div>
+<div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+<div>
+<div style="font-size: 0.75rem; color: #6ee7b7; text-transform: uppercase; letter-spacing: 1px;">Highest SGPA</div>
+<div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{max_sgpa:.2f}</div>
+</div>
+<div style="font-size: 1.5rem;">🚀</div>
+</div>
+<div style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+<div>
+<div style="font-size: 0.75rem; color: #fda4af; text-transform: uppercase; letter-spacing: 1px;">Lowest SGPA</div>
+<div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{min_sgpa:.2f}</div>
+</div>
+<div style="font-size: 1.5rem;">📉</div>
 </div>
 </div>
 """
@@ -484,7 +510,7 @@ def main():
     with col1:
         st.markdown(f"""
         <div class="stat-card">
-            <div class="stat-label">Total Students</div>
+            <div class="stat-label">👥 Total Students</div>
             <div class="stat-value" style="color: #3b82f6;">{total_st}</div>
         </div>
         """, unsafe_allow_html=True)
@@ -492,7 +518,7 @@ def main():
     with col2:
         st.markdown(f"""
         <div class="stat-card">
-            <div class="stat-label">With Backlogs</div>
+            <div class="stat-label">⚠️ With Backlogs</div>
             <div class="stat-value" style="color: #ef4444;">{backlogs}</div>
         </div>
         """, unsafe_allow_html=True)
@@ -500,7 +526,7 @@ def main():
     with col3:
         st.markdown(f"""
         <div class="stat-card">
-            <div class="stat-label">Pass Percentage</div>
+            <div class="stat-label">✅ Pass Percentage</div>
             <div class="stat-value" style="color: #10b981;">{pass_pct:.1f}%</div>
         </div>
         """, unsafe_allow_html=True)
@@ -608,34 +634,8 @@ def main():
             max_sgpa = valid_sgpa['SGPA'].max()
             min_sgpa = valid_sgpa['SGPA'].min()
             
-            # --- FIXED: Use textwrap.dedent to ensure correct HTML rendering ---
-            st.markdown(textwrap.dedent(f"""
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px;">Average SGPA</div>
-                        <div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{avg_sgpa:.2f}</div>
-                    </div>
-                    <div style="font-size: 1.5rem;">📊</div>
-                </div>
-                
-                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: #6ee7b7; text-transform: uppercase; letter-spacing: 1px;">Highest SGPA</div>
-                        <div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{max_sgpa:.2f}</div>
-                    </div>
-                    <div style="font-size: 1.5rem;">🚀</div>
-                </div>
-                
-                <div style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: #fda4af; text-transform: uppercase; letter-spacing: 1px;">Lowest SGPA</div>
-                        <div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{min_sgpa:.2f}</div>
-                    </div>
-                    <div style="font-size: 1.5rem;">📉</div>
-                </div>
-            </div>
-            """), unsafe_allow_html=True)
+            # --- FIXED: Use _get_sgpa_stats_html to ensure correct rendering ---
+            st.markdown(_get_sgpa_stats_html(avg_sgpa, max_sgpa, min_sgpa), unsafe_allow_html=True)
     else:
         st.info("No SGPA data available to display statistics.")
 
