@@ -271,7 +271,6 @@ def _show_header() -> bool:
         unsafe_allow_html=True,
     )
 
-    return dark_mode
 
     # Sample data download with better styling
     sample_file_path = "data/sample_vtu_results.csv"
@@ -288,6 +287,7 @@ def _show_header() -> bool:
                 )
     else:
         st.info("💡 **Getting Started:** Upload your VTU results files (CSV, Excel, or PDF) to begin analysis.")
+    return dark_mode
 
 
 def _default_config() -> Dict:
@@ -461,6 +461,23 @@ def main():
         min_total=config["min_total"],
         min_external=config["min_external"],
     )
+    # ---------------- CORRECT ABSENT HANDLING ----------------
+
+    # Find students who were absent in at least one subject
+    absent_usns = filtered[
+        filtered[config["result_col"]].astype(str).str.upper().eq("A")
+    ][config["rollno_col"]].dropna().unique()
+
+    # Mark absent at student level
+    per_student["IsAbsent"] = per_student[config["rollno_col"]].isin(absent_usns)
+
+    # Students included for academic performance (exclude absent)
+    analysis_students = per_student[~per_student["IsAbsent"]].copy()
+
+    # Count absent students
+    absent_students = per_student["IsAbsent"].sum()
+    # Update Status to show ABSENT in dashboard visuals
+    per_student.loc[per_student["IsAbsent"], "Status"] = "ABSENT"
 
     # --- SGPA & Credit Configuration ---
     st.sidebar.markdown("### ⚙️ SGPA Config")
@@ -496,39 +513,22 @@ def main():
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     # --- Toppers Section ---
-    st.markdown("### 🏆 Class Toppers")
-    
-    # Sort by SGPA DESC, then SubjectsPassed DESC
-    toppers = per_student.sort_values(by=["SGPA", "SubjectsPassed"], ascending=[False, False]).head(3)
-    
-    if not toppers.empty:
-        col1, col2, col3 = st.columns(3)
-        medals = ["🥇", "🥈", "🥉"]
-        colors = ["#f59e0b", "#94a3b8", "#b45309"] # Gold, Silver, Bronze styling
-        
-        for idx, (i, student) in enumerate(toppers.iterrows()):
-            if idx < 3:
-                medal = medals[idx]
-                border_color = colors[idx]
-                with [col1, col2, col3][idx]:
-                    st.markdown(
-                        textwrap.dedent(f"""
-                        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid {border_color}; border-radius: 12px; padding: 1.5rem; text-align: center; position: relative; overflow: hidden;">
-                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">{medal}</div>
-                            <h3 style="color: #f8fafc; margin: 0; font-size: 1.2rem;">{student[config['name_col']]}</h3>
-                            <div style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem;">{student[config['rollno_col']]}</div>
-                            <div style="background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 6px;">
-                                <div style="font-size: 0.8rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;">SGPA</div>
-                                <div style="font-size: 2rem; font-weight: 800; color: {border_color};">{student['SGPA']}</div>
-                            </div>
-                        </div>
-                        """),
-                        unsafe_allow_html=True
-                    )
-    else:
-        st.info("No students found to rank.")
+    st.markdown("### 🏆 Class Toppers (SGPA ≥ 9)")
 
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    ranked_students = per_student[per_student["SGPA"] >= 9].sort_values(
+    by=["SGPA", "SubjectsPassed"], ascending=[False, False]
+).reset_index(drop=True)
+
+    ranked_students["Rank"] = ranked_students.index + 1
+
+    if not ranked_students.empty:
+        st.dataframe(
+        ranked_students[[config['rollno_col'], config['name_col'], 'SGPA', 'SubjectsPassed', 'Rank']],
+        use_container_width=True
+    )
+    else:
+        st.info("No students with SGPA ≥ 9.")
+
 
     # --- SGPA Distribution and Stats ---
     # col1: Histogram, col2: Summary Stats already exists below, so we can insert a chart section here
@@ -539,7 +539,7 @@ def main():
     with colA:
         import plotly.express as px
         # Filter valid SGPAs (e.g., > 0)
-        valid_sgpa = per_student[per_student['SGPA'] > 0]
+        valid_sgpa = per_student[(per_student['SGPA'] > 0) & (per_student['Status'] != "ABSENT")]
         if not valid_sgpa.empty:
             fig_hist = px.histogram(
                 valid_sgpa, 
@@ -648,8 +648,11 @@ def main():
     else:
         st.info("No subjects found.")
 
+    # Exclude ABSENT from subject pass % calculations
+    subject_analysis_df = filtered[filtered[config["result_col"]].astype(str).str.upper() != "A"]
+
     per_subject = compute_subject_statistics(
-        df=filtered,
+        df=subject_analysis_df,
         subject_code_col=config["subject_code_col"],
         subject_name_col=config["subject_name_col"],
         result_col=config["result_col"],
@@ -659,10 +662,25 @@ def main():
         min_external=config["min_external"],
     )
 
+
     # Fix total students: count unique, non-empty USNs
     total_students = per_student['USN'].dropna().astype(str).str.strip().replace('', pd.NA).dropna().nunique() if 'USN' in per_student.columns else 0
 
-    overall = compute_overall_metrics(per_student)
+    # ---------- FINAL ACADEMIC METRICS (ABSENT EXCLUDED) ----------
+
+    students_with_backlogs = analysis_students[analysis_students["Status"] == "FAIL"].shape[0]
+
+    pass_percentage = (
+    (analysis_students["Status"] == "PASS").mean() * 100
+    if not analysis_students.empty else 0
+)
+
+    overall = {
+    "total_students": total_students,
+    "students_with_backlogs": students_with_backlogs,
+    "overall_pass_percentage": pass_percentage
+}
+
 
     # Enhanced summary dashboard
     avg_pass_pct = per_subject['Pass%'].mean() if not per_subject.empty and 'Pass%' in per_subject.columns else 0.0
@@ -672,7 +690,7 @@ def main():
     st.markdown("### 📊 Analysis Dashboard")
 
     # KPI Cards in a responsive grid
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         st.markdown(
@@ -706,6 +724,16 @@ def main():
             """),
             unsafe_allow_html=True,
         )
+    with col4:
+        st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">🚫 Absent Students</div>
+            <div class="kpi-value" style="color:#f59e0b;">{absent_students}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # Enhanced insights section
     with st.expander("📈 Detailed Insights", expanded=True):
@@ -747,7 +775,7 @@ def main():
     pie_df = pie_df[pie_df['Status'].notnull() & (pie_df['Status'].astype(str).str.strip() != '')]
 
     # Always show both PASS and FAIL, even if one is zero
-    status_order = ['PASS', 'FAIL']
+    status_order = ['PASS', 'FAIL', 'ABSENT']
     status_counts = pie_df['Status'].value_counts().reindex(status_order, fill_value=0).reset_index()
     status_counts.columns = ['Status', 'Count']
     total = status_counts['Count'].sum()
@@ -757,7 +785,13 @@ def main():
 
     with col1:
         import plotly.graph_objects as go
-        pie_colors = ["#10b981" if s == "PASS" else "#ef4444" for s in status_counts["Status"]]
+        pie_colors = [
+    "#10b981" if s == "PASS"
+    else "#ef4444" if s == "FAIL"
+    else "#f59e0b"
+    for s in status_counts["Status"]
+]
+
         fig = go.Figure(
             go.Pie(
                 labels=status_counts["Status"],
@@ -789,9 +823,20 @@ def main():
     with col2:
         st.markdown("#### 📊 Statistics")
         for _, row in status_counts.iterrows():
-            color = "🟢" if row['Status'] == "PASS" else "🔴"
+            if row['Status'] == "PASS":
+                color = "🟢"
+            elif row['Status'] == "FAIL":
+                color = "🔴"
+            else:
+                color = "🟠"
             bg_color = "#0f172a"
-            border_color = "#22c55e" if row['Status'] == "PASS" else "#ef4444"
+            if row['Status'] == "PASS":
+                border_color = "#22c55e"
+            elif row['Status'] == "FAIL":
+                border_color = "#ef4444"
+            else:
+                border_color = "#f59e0b"
+
             st.markdown(
                 f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: {bg_color}; border: 1px solid {border_color}; border-radius: 8px; margin-bottom: 0.5rem; color: #f8fafc;">
@@ -850,8 +895,9 @@ def main():
 
             # Calculate student stats
             total_subjects = len(student_df)
-            passed = (student_df['Result'].astype(str).str.upper().str.contains(r"PASS|PASSED|^P$")).sum() if 'Result' in student_df.columns else 0
-            failed = total_subjects - passed
+            absent_sub = (student_df['Result'].astype(str).str.upper() == "A").sum()
+            passed = (student_df['Result'].astype(str).str.upper().str.contains(r"PASS|PASSED|^P$")).sum()
+            failed = total_subjects - passed - absent_sub
             pass_rate = (passed / total_subjects * 100) if total_subjects > 0 else 0
 
             # Color coding based on performance
@@ -924,7 +970,10 @@ def main():
 
     with col2:
         # Failed students CSV
-        failed_df = per_student[per_student["Status"] == "FAIL"]
+        failed_usns = per_student[per_student["Status"] == "FAIL"]["USN"]
+        failed_df = filtered[filtered["USN"].isin(failed_usns)][
+            ["USN", "Name", "Subject Code", "Subject Name", "Result"]
+    ]
         failed_csv = failed_df.to_csv(index=False).encode()
         st.download_button(
             label="❌ Failed Students (CSV)",
@@ -1007,7 +1056,7 @@ def main():
         <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology & Management (SMVITM), Bantakal
     </p>
 </div>
-<p style="margin-top: 1.5rem; color: #475569; font-size: 0.7rem;">© 2026 VTU Result Analyser</p>
+<p style="margin-top: 1.5rem; color: #475569; font-size: 0.7rem;">© 2025 - 2026 VTU Result Analyser</p>
 </div>
 """,
         unsafe_allow_html=True
