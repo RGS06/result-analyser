@@ -234,14 +234,6 @@ def _show_header() -> bool:
             margin: 3rem 0;
             border-top: 1px solid var(--border-color);
         }
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         
         /* Hide Streamlit Branding */
         #MainMenu {visibility: hidden;}
@@ -346,7 +338,45 @@ def main():
 
     if not uploaded:
         st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
-        st.info("👋 Upload files to generate the dashboard.")
+        # --- FOOTER DISPLAY ON LANDING PAGE ---
+        st.markdown(
+            """
+            <div style="text-align: center; padding: 2rem; background: var(--surface-dark); border-radius: 12px; border: 1px solid var(--border-color); margin-top: 3rem;">
+                <h4 style="color: #38bdf8; margin-bottom: 0.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Project Team</h4>
+                <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 1.5rem;">Student Contributors</p>
+
+                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS400</span>
+                        <span style="color: #f8fafc; font-size: 0.95rem;">Aditya K Shenava</span>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS401</span>
+                        <span style="color: #f8fafc; font-size: 0.95rem;">Amith Suvarna</span>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS403</span>
+                        <span style="color: #f8fafc; font-size: 0.95rem;">Prajanth</span>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS404</span>
+                        <span style="color: #f8fafc; font-size: 0.95rem;">Preetham</span>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; max-width: 600px; margin: 0 auto;">
+                    <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Guide</p>
+                    <h4 style="color: #f8fafc; margin: 0; font-size: 1.3rem; font-weight: 700;">Raghavendra G S</h4>
+                    <p style="margin-top: 0.5rem; color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
+                        <span style="color: #38bdf8; font-weight: 600;">Department:</span> Computer Science and Engineering<br>
+                        <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology & Management (SMVITM), Bantakal
+                    </p>
+                </div>
+                <p style="margin-top: 2rem; color: #475569; font-size: 0.75rem;">© 2025 - 2026 VTU Result Analyser</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
         return
 
     df = _aggregate_uploads(uploaded)
@@ -643,12 +673,45 @@ def main():
             else: st.caption("No Section Data")
 
     # --- Footer ---
-    st.markdown("<div style='margin-top: 5rem;'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style="text-align: center; color: #64748b; font-size: 0.8rem;">
-        <p>© 2025 VTU Analytics • SMVITM</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style="text-align: center; padding: 2rem; background: var(--surface-dark); border-radius: 12px; border: 1px solid var(--border-color);">
+            <h4 style="color: #38bdf8; margin-bottom: 0.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Project Team</h4>
+            <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 1.5rem;">Student Contributors</p>
+
+            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS400</span>
+                    <span style="color: #f8fafc; font-size: 0.95rem;">Aditya K Shenava</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS401</span>
+                    <span style="color: #f8fafc; font-size: 0.95rem;">Amith Suvarna</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS403</span>
+                    <span style="color: #f8fafc; font-size: 0.95rem;">Prajanth</span>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <span style="color: #38bdf8; font-size: 0.75rem; font-weight: 700; display: block;">4MW24CS404</span>
+                    <span style="color: #f8fafc; font-size: 0.95rem;">Preetham</span>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; max-width: 600px; margin: 0 auto;">
+                <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Guide</p>
+                <h4 style="color: #f8fafc; margin: 0; font-size: 1.3rem; font-weight: 700;">Raghavendra G S</h4>
+                <p style="margin-top: 0.5rem; color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
+                    <span style="color: #38bdf8; font-weight: 600;">Department:</span> Computer Science and Engineering<br>
+                    <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology & Management (SMVITM), Bantakal
+                </p>
+            </div>
+            <p style="margin-top: 2rem; color: #475569; font-size: 0.75rem;">© 2025 - 2026 VTU Result Analyser</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
