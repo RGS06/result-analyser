@@ -44,9 +44,7 @@ def check_dependencies():
 check_dependencies()
 
 def _get_footer_html() -> str:
-    """Returns the HTML for the credit-card style footer. 
-    IMPORTANT: No indentation in the string to prevent Markdown code-block rendering.
-    """
+    """Returns the HTML for the credit-card style footer."""
     return """
 <div style="max-width: 420px; margin: 4rem auto 2rem auto; padding: 1.5rem; background: linear-gradient(135deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); backdrop-filter: blur(12px); font-family: 'Inter', sans-serif; position: relative; overflow: hidden;">
 <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); pointer-events: none;"></div>
@@ -278,6 +276,7 @@ def _show_header() -> bool:
         """
         <div class="hero-header fade-in">
             <h1 class="hero-title">VTU Results Analytics</h1>
+            <p class="hero-subtitle">Advanced Performance Intelligence for Departments</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -419,6 +418,21 @@ def main():
     # Exclude Absent students from analytics
     analysis_students = per_student[per_student["Status"] != "ABSENT"].copy()
     
+    # --- Compute SGPA ---
+    # Quick fix for credits (default to 4 if not interactive)
+    # Ideally this would be dynamic, but for display we assume a default
+    unique_subjects = sorted(filtered[config["subject_code_col"]].unique())
+    credit_map = {sub: 4 for sub in unique_subjects}
+    
+    per_student = compute_sgpa(
+        per_student=per_student,
+        df=filtered,
+        subject_credits=credit_map,
+        subject_code_col=config["subject_code_col"],
+        total_col=config["total_col"],
+        result_col=config["result_col"]
+    )
+    
     # Subject Stats
     per_subject = compute_subject_statistics(
         df=filtered,
@@ -433,6 +447,11 @@ def main():
 
     # Section Subject Stats (if Section exists)
     if "Section" in filtered.columns:
+        # Merge section info back into per_student for later
+        section_map = filtered[["USN", "Section"]].drop_duplicates()
+        if "Section" not in per_student.columns:
+            per_student = per_student.merge(section_map, on="USN", how="left")
+
         section_subject_stats = (
             filtered.groupby([config["subject_code_col"], config["subject_name_col"], "Section"])
             .agg(
@@ -494,41 +513,203 @@ def main():
         pie_df = per_student[per_student['Status'] != 'ABSENT']
         status_counts = pie_df['Status'].value_counts().reset_index()
         status_counts.columns = ['Status', 'Count']
+        total_count = status_counts['Count'].sum()
         
-        fig = go.Figure(go.Pie(
+        # Colors: Map PASS to Green, FAIL to Red
+        colors_map = {'PASS': '#10b981', 'FAIL': '#ef4444'}
+        pie_colors = [colors_map.get(s, '#888888') for s in status_counts["Status"]]
+
+        # 3D Donut
+        fig = go.Figure(data=[go.Pie(
             labels=status_counts["Status"],
             values=status_counts["Count"],
-            hole=0.6,
-            marker=dict(colors=['#10b981', '#ef4444']), # Green, Red
-            textinfo="label+percent",
-        ))
+            hole=0.65,
+            pull=[0.02] * len(status_counts),
+            marker=dict(colors=pie_colors, line=dict(color='#0f172a', width=5)),
+            textinfo='percent',
+            textposition='outside',
+            textfont=dict(size=14, family="Inter", color="#cbd5e1"),
+            hoverinfo='label+value+percent',
+            hovertemplate="<b>%{label}</b><br>%{value} Students<br><b>%{percent}</b><extra></extra>"
+        )])
+        
         fig.update_layout(
+            showlegend=True,
+            legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5, font=dict(color="#94a3b8")),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#94a3b8"),
-            showlegend=False,
-            margin=dict(t=20, b=20, l=20, r=20)
+            margin=dict(t=30, b=50, l=40, r=40),
+            annotations=[dict(text=f"<span style='font-size:14px; color:#94a3b8;'>Total</span><br><span style='font-size:26px; color:#f8fafc; font-weight:bold;'>{total_count}</span>", x=0.5, y=0.5, font_size=20, showarrow=False, xanchor="center", yanchor="middle")]
         )
         st.plotly_chart(fig, use_container_width=True)
 
     with col_toppers:
         st.markdown("#### 🏅 Quick Statistics")
+        pass_count = status_counts[status_counts['Status']=='PASS']['Count'].sum() if not status_counts.empty else 0
+        fail_count = status_counts[status_counts['Status']=='FAIL']['Count'].sum() if not status_counts.empty else 0
+        
         st.markdown(f"""
-        <div style="background: var(--surface-dark); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
-            <div style="display:flex; justify-content:space-between; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
-                <span>Passing Students</span>
-                <span style="color:#10b981; font-weight:700;">{status_counts[status_counts['Status']=='PASS']['Count'].sum() if not status_counts.empty else 0}</span>
+        <div style="background: var(--surface-dark); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
+                <div>
+                    <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.2rem;">Passing Students</div>
+                    <div style="color:#10b981; font-weight:700; font-size:1.5rem;">{pass_count}</div>
+                </div>
+                <div style="background:rgba(16, 185, 129, 0.1); padding:0.5rem; border-radius:8px;">✅</div>
             </div>
-            <div style="display:flex; justify-content:space-between;">
-                <span>Failing Students</span>
-                <span style="color:#ef4444; font-weight:700;">{status_counts[status_counts['Status']=='FAIL']['Count'].sum() if not status_counts.empty else 0}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.2rem;">Failing Students</div>
+                    <div style="color:#ef4444; font-weight:700; font-size:1.5rem;">{fail_count}</div>
+                </div>
+                <div style="background:rgba(239, 68, 68, 0.1); padding:0.5rem; border-radius:8px;">❌</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
+    # --- 5. SGPA Analytics Section (RESTORED & UPGRADED) ---
+    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
+    st.markdown("### 📈 SGPA Analytics")
+    
+    # Filter valid SGPAs (e.g., > 0)
+    valid_sgpa = per_student[(per_student['SGPA'] > 0) & (per_student['Status'] != "ABSENT")]
+    
+    if not valid_sgpa.empty:
+        col_hist, col_stats = st.columns([2, 1])
+        
+        with col_hist:
+            fig_hist = px.histogram(
+                valid_sgpa, 
+                x="SGPA", 
+                nbins=20, 
+                color_discrete_sequence=["#3b82f6"] # Blue theme
+            )
+            fig_hist.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font_color="#94a3b8",
+                xaxis_title="SGPA Score",
+                yaxis_title="Count",
+                bargap=0.1,
+                margin=dict(t=10, l=10, r=10, b=10)
+            )
+            fig_hist.update_traces(
+                marker_line_width=0,
+                opacity=0.8
+            )
+            st.plotly_chart(fig_hist, use_container_width=True)
+            
+        with col_stats:
+            avg_sgpa = valid_sgpa['SGPA'].mean()
+            max_sgpa = valid_sgpa['SGPA'].max()
+            min_sgpa = valid_sgpa['SGPA'].min()
+            
+            # Custom Vertical "Control Panel" Style for Stats
+            st.markdown(f"""
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px;">Average SGPA</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{avg_sgpa:.2f}</div>
+                    </div>
+                    <div style="font-size: 1.5rem;">📊</div>
+                </div>
+                
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: #6ee7b7; text-transform: uppercase; letter-spacing: 1px;">Highest SGPA</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{max_sgpa:.2f}</div>
+                    </div>
+                    <div style="font-size: 1.5rem;">🚀</div>
+                </div>
+                
+                <div style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: #fda4af; text-transform: uppercase; letter-spacing: 1px;">Lowest SGPA</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #f8fafc;">{min_sgpa:.2f}</div>
+                    </div>
+                    <div style="font-size: 1.5rem;">📉</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("No SGPA data available to display statistics.")
+
+    # --- 6. Subject Toppers Section (Restored & Modernized) ---
+    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
+    st.markdown("### 🏆 Subject Toppers")
+    
+    # Logic to get subjects
+    available_subjects = sorted(filtered[config["subject_code_col"]].dropna().unique()) if config["subject_code_col"] in filtered.columns else []
+    
+    if available_subjects:
+        col_sel, col_empty = st.columns([1, 2])
+        with col_sel:
+            selected_subj = st.selectbox("Select Subject for Details", available_subjects)
+        
+        # Filter data
+        subj_data = filtered[filtered[config["subject_code_col"]] == selected_subj].copy()
+        
+        # Convert total to numeric
+        if config["total_col"] in subj_data.columns:
+            subj_data[config["total_col"]] = pd.to_numeric(subj_data[config["total_col"]], errors='coerce').fillna(0)
+            subj_toppers = subj_data.sort_values(by=config["total_col"], ascending=False)
+            
+            if not subj_toppers.empty:
+                top_student = subj_toppers.iloc[0]
+                top_name = top_student.get(config['name_col'], 'Unknown')
+                top_usn = top_student.get(config['rollno_col'], 'Unknown')
+                top_score = int(top_student.get(config['total_col'], 0))
+                
+                # Layout: Card on Left, Table on Right
+                t_col1, t_col2 = st.columns([1, 2])
+                
+                with t_col1:
+                    st.markdown(f"""
+                    <div style="
+                        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(15, 23, 42, 0.6));
+                        border: 2px solid #fbbf24;
+                        border-radius: 16px;
+                        padding: 2rem;
+                        text-align: center;
+                        box-shadow: 0 10px 30px -10px rgba(251, 191, 36, 0.3);
+                        position: relative;
+                        overflow: hidden;
+                    ">
+                        <div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));">🏆</div>
+                        <div style="color: #fbbf24; font-size: 0.9rem; font-weight: 700; letter-spacing: 2px; margin-bottom: 0.5rem; text-transform: uppercase;">Subject Topper</div>
+                        <div style="color: #f8fafc; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.2rem;">{top_name}</div>
+                        <div style="color: #94a3b8; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; margin-bottom: 1.5rem;">{top_usn}</div>
+                        <div style="
+                            display: inline-block;
+                            background: rgba(251, 191, 36, 0.2);
+                            color: #fbbf24;
+                            padding: 0.5rem 1.5rem;
+                            border-radius: 50px;
+                            font-weight: 800;
+                            font-size: 1.2rem;
+                            border: 1px solid rgba(251, 191, 36, 0.4);
+                        ">
+                            {top_score} Marks
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with t_col2:
+                    st.markdown("##### 📜 Top 10 Performers")
+                    top_10_df = subj_toppers.head(10)[[config['rollno_col'], config['name_col'], config['total_col'], config['result_col']]].reset_index(drop=True)
+                    top_10_df.index += 1
+                    st.dataframe(top_10_df, use_container_width=True)
+            else:
+                st.info("No data available for this subject.")
+        else:
+            st.warning("Total column not found.")
+    else:
+        st.info("No subjects found.")
+
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # --- 5. Tabs for Detailed Data ---
+    # --- 7. Tabs for Detailed Data ---
     tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "📚 Subject Stats", "👥 Students", "🏷 Section Stats"])
 
     with tab1:
@@ -558,7 +739,7 @@ def main():
 
     st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
 
-    # --- 6. Export Section (Redesigned) ---
+    # --- 8. Export Section (Redesigned) ---
     st.markdown("### 💾 Export Reports")
     st.markdown("Download comprehensive reports for your records.")
     
