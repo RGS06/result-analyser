@@ -278,7 +278,6 @@ def _show_header() -> bool:
         """
         <div class="hero-header fade-in">
             <h1 class="hero-title">VTU Results Analytics</h1>
-            <p class="hero-subtitle">Advanced Performance Intelligence for Departments</p>
         </div>
         """,
         unsafe_allow_html=True,
