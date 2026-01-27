@@ -666,6 +666,29 @@ def main():
         min_total=config["min_total"],
         min_external=config["min_external"],
     )
+    # ================= SECTION-WISE SUBJECT STATS =================
+if "Section" in filtered.columns:
+
+    section_subject_stats = (
+        filtered.groupby(
+            [config["subject_code_col"], config["subject_name_col"], "Section"]
+        )
+        .agg(
+            Total=("USN", "count"),
+            Absent=("Result", lambda x: (x.astype(str).str.upper() == "A").sum()),
+            Passed=("Result", lambda x: x.astype(str).str.upper().str.contains(r"PASS|PASSED|^P$").sum())
+        )
+        .reset_index()
+    )
+
+    section_subject_stats["Appeared"] = section_subject_stats["Total"] - section_subject_stats["Absent"]
+    section_subject_stats["Failed"] = section_subject_stats["Appeared"] - section_subject_stats["Passed"]
+    section_subject_stats["Pass%"] = (
+        section_subject_stats["Passed"] / section_subject_stats["Appeared"] * 100
+    ).round(2)
+
+else:
+    section_subject_stats = pd.DataFrame()
 
 
 
@@ -864,7 +887,13 @@ def main():
 
 
     # Enhanced student analysis sections
-    tab1, tab2, tab3, tab4 = st.tabs(["👤 Student Status", "📚 Individual Results", "📊 Complete Analysis", "📖 Subject Statistics"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "👤 Student Status",
+    "📚 Individual Results",
+    "📊 Complete Analysis",
+    "📖 Subject Statistics",
+    "🏷 Section-wise Subject Stats"
+])
 
     with tab1:
         st.markdown("#### 👥 Per-Student Status Overview")
@@ -961,6 +990,23 @@ def main():
     # Enhanced export section
     st.markdown("### 💾 Export Results")
     st.markdown("Download your analysis results in various formats:")
+
+    with tab5:
+        st.markdown("#### 🏷 Subject Performance by Section")
+
+    if section_subject_stats.empty:
+        st.info("Section column not found in uploaded data.")
+    else:
+        subject_filter = st.selectbox(
+            "Select Subject",
+            sorted(section_subject_stats[config["subject_code_col"]].unique())
+        )
+
+        display_df = section_subject_stats[
+            section_subject_stats[config["subject_code_col"]] == subject_filter
+        ].sort_values("Section")
+
+        st.dataframe(display_df, use_container_width=True)
 
     col1, col2, col3 = st.columns(3)
 
