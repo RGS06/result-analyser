@@ -464,20 +464,11 @@ def main():
     # ---------------- CORRECT ABSENT HANDLING ----------------
 
     # Find students who were absent in at least one subject
-    absent_usns = filtered[
-        filtered[config["result_col"]].astype(str).str.upper().eq("A")
-    ][config["rollno_col"]].dropna().unique()
+    # Students absent in ALL subjects
+    absent_students = (per_student["Status"] == "ABSENT").sum()
 
-    # Mark absent at student level
-    per_student["IsAbsent"] = per_student[config["rollno_col"]].isin(absent_usns)
-
-    # Students included for academic performance (exclude absent)
-    analysis_students = per_student[~per_student["IsAbsent"]].copy()
-
-    # Count absent students
-    absent_students = per_student["IsAbsent"].sum()
-    # Update Status to show ABSENT in dashboard visuals
-    per_student.loc[per_student["IsAbsent"], "Status"] = "ABSENT"
+    # Students to include in academic performance
+    analysis_students = per_student[per_student["Status"] != "ABSENT"].copy()
 
     # --- SGPA & Credit Configuration ---
     st.sidebar.markdown("### ⚙️ SGPA Config")
@@ -649,10 +640,9 @@ def main():
         st.info("No subjects found.")
 
     # Exclude ABSENT from subject pass % calculations
-    subject_analysis_df = filtered[filtered[config["result_col"]].astype(str).str.upper() != "A"]
 
     per_subject = compute_subject_statistics(
-        df=subject_analysis_df,
+        df=filtered,   # use full data
         subject_code_col=config["subject_code_col"],
         subject_name_col=config["subject_name_col"],
         result_col=config["result_col"],
@@ -661,6 +651,7 @@ def main():
         min_total=config["min_total"],
         min_external=config["min_external"],
     )
+
 
 
     # Fix total students: count unique, non-empty USNs
