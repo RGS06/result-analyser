@@ -4,6 +4,8 @@ import textwrap
 import streamlit as st
 import pandas as pd
 from typing import Tuple, Dict
+import plotly.express as px
+import plotly.graph_objects as go
 
 # Assuming these modules exist in your src folder based on the imports
 from src.parse import parse_vtu_results
@@ -50,190 +52,200 @@ def _show_header() -> bool:
     )
 
     # Theme toggle in the sidebar
-    st.sidebar.markdown("## Theme")
-    dark_mode = st.sidebar.checkbox("🌙 Dark mode", value=False, help="Enable dark theme for the app")
+    st.sidebar.markdown("## 🎨 Appearance")
+    dark_mode = st.sidebar.checkbox("🌙 Dark Mode", value=True, help="Toggle between dark and light themes")
 
-    # Enhanced global styles with modern design and theme variables
+    # -------------------------------------------------------------------------
+    #  🎨 PRO UI/UX CSS INJECTION
+    # -------------------------------------------------------------------------
     st.markdown(
         """
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
-            /* Core Colors - High Contrast Modern Dark Theme */
-            --bg-color: #0f172a;           /* Slate 900 */
-            --card-color: #1e293b;         /* Slate 800 */
-            --text-color: #f8fafc;         /* Slate 50 */
-            --text-muted: #94a3b8;         /* Slate 400 */
-            --primary: #38bdf8;            /* Sky 400 */
-            --secondary: #818cf8;          /* Indigo 400 */
-            --success: #22c55e;            /* Green 500 */
-            --danger: #ef4444;             /* Red 500 */
-            --border-color: #334155;       /* Slate 700 */
+            /* Palette: Modern Slate & Indigo */
+            --bg-dark: #0f172a;
+            --surface-dark: #1e293b;
+            --surface-light: #334155;
+            --border-color: #334155;
             
-            /* Gradients */
-            --header-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
-            --card-gradient: linear-gradient(145deg, #1e293b, #0f172a);
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
         }
 
-        /* Base App Styling */
+        /* 1. Global Reset & Typography */
         .stApp {
-            background-color: var(--bg-color) !important;
             font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-dark);
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary) !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.02em;
+        }
+        p, label, span, li {
+            color: var(--text-secondary) !important;
+        }
+        .block-container {
+            padding-top: 2rem !important;
+            padding-bottom: 4rem !important;
+            max-width: 1200px !important;
         }
 
-        /* Text Visibility - Ensure EVERYTHING is visible */
-        h1, h2, h3, h4, h5, h6, p, label, span, div {
-            color: var(--text-color) !important;
+        /* 2. Header Section */
+        .hero-header {
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-bottom: 3rem;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+            border-bottom: 1px solid var(--border-color);
         }
-        .stMarkdown p {
-            color: var(--text-muted) !important;
+        .hero-title {
+            font-size: 3.5rem !important;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem !important;
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
+        }
+        .hero-subtitle {
+            font-size: 1.2rem !important;
+            color: var(--text-secondary);
+            font-weight: 400;
         }
 
-        /* Main Header */
-        .header-container {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
+        /* 3. Cards (KPIs & Info) */
+        .stat-card {
+            background: var(--surface-dark);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .header-title {
-            font-size: 2.5rem !important;
-            font-weight: 800 !important;
-            background: var(--header-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent !important;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
-        .header-subtitle {
-            font-size: 1.1rem !important;
-            color: var(--text-muted) !important;
-            -webkit-text-fill-color: var(--text-muted) !important;
-        }
-
-        /* Info Cards (KPIs) */
-        .kpi-card {
-            background: var(--card-color);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
             padding: 1.5rem;
             text-align: center;
-            transition: all 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-        .kpi-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            border-color: #6366f1;
         }
-        .kpi-label {
-            font-size: 0.875rem;
+        .stat-label {
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: var(--text-muted) !important;
+            color: var(--text-secondary);
             margin-bottom: 0.5rem;
         }
-        .kpi-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-color) !important;
-        }
-        .kpi-value.pass { color: var(--success) !important; }
-        .kpi-value.fail { color: var(--danger) !important; }
-        .kpi-value.total { color: var(--primary) !important; }
-
-        /* Widget Containers (Sidebar, Selectboxes) */
-        .stSelectbox > div > div {
-            background-color: var(--card-color) !important;
-            color: var(--text-color) !important;
-            border-color: var(--border-color) !important;
-        }
-        .stMultiSelect > div > div {
-            background-color: var(--card-color) !important;
-            border-color: var(--border-color) !important;
-        }
-        
-        /* Expander Styling */
-        .streamlit-expanderHeader {
-            background-color: var(--card-color) !important;
-            border: 1px solid var(--border-color) !important;
-            color: var(--text-color) !important;
-            border-radius: 8px !important;
-        }
-        
-        /* Dataframes & Tables */
-        .stDataFrame {
-            background-color: var(--card-color) !important;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-        }
-        [data-testid="stTable"] {
-            background-color: var(--card-color) !important;
-            color: var(--text-color) !important;
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
         }
 
-        /* Buttons - Modern Standard */
-        .stButton > button, .stDownloadButton > button {
-            background: var(--card-color) !important;
-            color: var(--text-color) !important;
+        /* 4. Buttons (Custom Overrides) */
+        /* Primary Action Buttons (Upload, etc.) */
+        .stButton button {
+            background: var(--surface-light) !important;
+            color: var(--text-primary) !important;
             border: 1px solid var(--border-color) !important;
             border-radius: 8px !important;
-            transition: all 0.2s;
+            padding: 0.6rem 1.2rem !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease-in-out !important;
+            width: 100%;
         }
-        .stButton > button:hover, .stDownloadButton > button:hover {
-            border-color: var(--primary) !important;
-            color: var(--primary) !important;
-            background: #1e293b !important;
+        .stButton button:hover {
+            background: var(--primary-gradient) !important;
+            border-color: transparent !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
 
-        /* File Uploader */
-        [data-testid="stFileUploader"] {
-            padding: 2rem;
-            border-radius: 12px;
+        /* Download Buttons - Distinguish them */
+        .stDownloadButton button {
+            background: transparent !important;
+            border: 1px solid var(--info-color) !important;
+            color: var(--info-color) !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease !important;
+        }
+        .stDownloadButton button:hover {
+            background: var(--info-color) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* 5. Inputs & Filters */
+        .stFileUploader {
             border: 2px dashed var(--border-color);
-            background: rgba(30, 41, 59, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            background: rgba(30, 41, 59, 0.5);
         }
-        [data-testid="stFileUploader"] small {
-            color: var(--text-muted) !important;
-        }
-        [data-testid="stFileUploader"] button {
-            background: var(--primary) !important;
-            color: #0f172a !important; /* Dark text on bright button */
-            font-weight: 600 !important;
-            border: none !important;
+        .stFileUploader:hover {
+            border-color: #6366f1;
+            background: rgba(30, 41, 59, 0.8);
         }
         
-        /* Highlighting specific elements */
-        .highlight-container {
-            background: var(--card-color);
-            border-left: 4px solid var(--primary);
-            padding: 1rem;
-            border-radius: 0 8px 8px 0;
-            margin-bottom: 1rem;
+        /* Selectboxes & Multiselects */
+        div[data-baseweb="select"] > div {
+            background-color: var(--surface-dark) !important;
+            border-color: var(--border-color) !important;
+            border-radius: 8px !important;
+            color: var(--text-primary) !important;
         }
-
-        /* Tabs */
+        
+        /* 6. Dataframes & Tables */
+        .stDataFrame {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* 7. Tabs */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
         .stTabs [data-baseweb="tab"] {
-            color: var(--text-muted) !important;
+            background-color: transparent !important;
+            border-radius: 6px 6px 0 0 !important;
+            color: var(--text-secondary) !important;
+            padding: 0.5rem 1rem !important;
         }
         .stTabs [data-baseweb="tab"][aria-selected="true"] {
-            color: var(--primary) !important;
-            border-bottom-color: var(--primary) !important;
+            color: #6366f1 !important;
+            border-bottom: 2px solid #6366f1 !important;
         }
+
+        /* 8. Utility Classes */
+        .section-divider {
+            margin: 3rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         
-        /* Scrollbars */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
-        /* Remove Default Footer */
-        footer { visibility: hidden; }
-        #MainMenu { visibility: hidden; }
+        /* Hide Streamlit Branding */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
         
         </style>
         """,
@@ -241,55 +253,19 @@ def _show_header() -> bool:
     )
 
     st.markdown(
-        f"""
-        <script>
-        // Apply data-theme attribute based on Python-side toggle
-        (function() {{
-            try {{
-                var dark = {str(dark_mode).lower()};
-                if (dark) {{
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                }} else {{
-                    document.documentElement.removeAttribute('data-theme');
-                }}
-            }} catch (e) {{ console.error(e); }}
-        }})();
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Custom header with enhanced design
-    st.markdown(
         """
-        <div class="header-container fade-in">
-            <div class="header-title">🎓 VTU Results Analyzer</div>
-            <div class="header-subtitle">Department Dashboard for Automated Pass/Fail Analytics</div>
+        <div class="hero-header fade-in">
+            <h1 class="hero-title">VTU Results Analytics</h1>
+            <p class="hero-subtitle">Advanced Performance Intelligence for Departments</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # Sample data download with better styling
-    sample_file_path = "data/sample_vtu_results.csv"
-    if os.path.exists(sample_file_path):
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            with open(sample_file_path, "rb") as f:
-                st.download_button(
-                    label="📥 Download Sample Data (CSV)",
-                    data=f.read(),
-                    file_name="sample_vtu_results.csv",
-                    mime="text/csv",
-                    help="Download sample VTU results data to test the analyzer"
-                )
-    else:
-        st.info("💡 **Getting Started:** Upload your VTU results files (CSV, Excel, or PDF) to begin analysis.")
     return dark_mode
 
 
 def _default_config() -> Dict:
-    # Fixed configuration (settings menu removed)
     return {
         "min_total": 40,
         "min_external": 35,
@@ -310,22 +286,21 @@ def _aggregate_uploads(files) -> pd.DataFrame:
         file_name = getattr(f, 'name', 'file')
         try:
             if file_name.lower().endswith('.pdf'):
-                # Check for scanned PDF to provide user feedback
                 f.seek(0)
                 file_bytes = f.read()
                 f.seek(0)
                 if is_scanned(file_bytes):
-                    with st.status(f"🔍 Analyzing scanned PDF: {file_name}...", expanded=False) as status:
-                        st.write("Detecting layout...")
-                        st.write("Performing OCR extraction (this may take a moment)...")
+                    with st.status(f"🔍 Processing Scanned PDF: {file_name}...", expanded=False) as status:
+                        st.write("Detecting layout & text layers...")
+                        st.write("Applying OCR engine...")
                         parsed_df = parse_vtu_results(f)
-                        status.update(label=f"✅ Finished OCR for {file_name}", state="complete", expanded=False)
+                        status.update(label=f"✅ OCR Completed: {file_name}", state="complete", expanded=False)
                         frames.append(parsed_df)
                 else:
                     frames.append(parse_vtu_results(f))
             else:
                 frames.append(parse_vtu_results(f))
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             st.warning(f"Skipped {file_name}: {exc}")
     if not frames:
         return pd.DataFrame()
@@ -336,93 +311,70 @@ def main():
     dark_mode = _show_header()
     config = _default_config()
 
-    # Enhanced file uploader section
-    st.markdown("### 📤 Upload Your Results")
-    uploaded = st.file_uploader(
-        "Choose VTU results file(s) (CSV, Excel, or PDF)",
-        type=["csv", "xls", "xlsx", "pdf"],
-        accept_multiple_files=True,
-        help="Upload one or more VTU result files. Supports CSV, Excel (.xls/.xlsx), and PDF formats."
-    )
-
-    # Enhanced PDF help section
-    if uploaded:
-        pdf_files = [f for f in uploaded if getattr(f, 'name', '').lower().endswith('.pdf')]
-        if pdf_files:
-            with st.expander("📄 PDF Processing Tips", expanded=False):
-                st.markdown("""
-                **Our advanced PDF engine now features:**
-                - **Automatic Scanned Detection**: Detects if your PDF is text-based or a scanned image.
-                - **Integrated OCR**: Automatically uses Tesseract OCR for handwriting or poor scans.
-                - **Regex Reconstruction**: Robustly handles imperfect text capture from any source.
-                - **Pro Tip**: If processing is slow, it's likely performing high-precision OCR for scanned pages.
-                """)
+    # --- 1. Upload Section ---
+    col1, col2 = st.columns([1, 4])
+    with col2:
+        st.markdown("### 📤 Import Data")
+        uploaded = st.file_uploader(
+            "Drag & drop result files (CSV, Excel, PDF)",
+            type=["csv", "xls", "xlsx", "pdf"],
+            accept_multiple_files=True,
+            label_visibility="collapsed"
+        )
+    with col1:
+        st.markdown("### ℹ️ Help")
+        st.markdown("""
+        <div style="font-size: 0.9rem; color: #94a3b8;">
+        Upload your raw VTU result files.
+        <br><br>
+        ✅ <strong>CSV / Excel</strong><br>
+        ✅ <strong>Digital PDFs</strong><br>
+        ✅ <strong>Scanned PDFs</strong>
+        </div>
+        """, unsafe_allow_html=True)
+        # Sample data download
+        sample_file_path = "data/sample_vtu_results.csv"
+        if os.path.exists(sample_file_path):
+            with open(sample_file_path, "rb") as f:
+                st.download_button(
+                    label="Download Sample Data",
+                    data=f.read(),
+                    file_name="sample_vtu_results.csv",
+                    mime="text/csv",
+                    help="Test the app with this file"
+                )
 
     if not uploaded:
-        # Enhanced welcome section
-        st.markdown(
-            """
-            <div style="text-align: center; padding: 3rem 2rem; background: #1e293b; border-radius: 16px; margin: 2rem 0; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
-                <h3 style="color: #f8fafc; margin-bottom: 1rem;">Ready to Analyze VTU Results?</h3>
-                <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem;">
-                    Upload your VTU result files above to get instant insights on student performance,
-                    pass/fail distributions, and subject-wise analytics.
-                </p>
-                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-                    <div style="background: #0f172a; padding: 1rem; border-radius: 8px; border-left: 4px solid #38bdf8; color: #e2e8f0;">
-                        <strong style="color: #38bdf8;">Supported Formats:</strong> CSV, Excel, PDF
-                    </div>
-                    <div style="background: #0f172a; padding: 1rem; border-radius: 8px; border-left: 4px solid #22c55e; color: #e2e8f0;">
-                        <strong style="color: #22c55e;">Features:</strong> Automated analysis, visual dashboards, exports
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
+        st.info("👋 Upload files to generate the dashboard.")
         return
 
     df = _aggregate_uploads(uploaded)
-    # Preserve original extracted columns for debug display
-    original_columns = list(df.columns) if not df.empty else []
     if df.empty:
-        st.warning("No readable data found in uploaded files.")
+        st.error("No readable data extracted. Please check your files.")
         return
 
-    # ---------------- FIXED: 3-COLUMN FILTER LAYOUT ----------------
-    with st.expander("🔍 Filter & Customize Analysis", expanded=True):
-        col1, col2, col3 = st.columns(3)
+    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
 
+    # --- 2. Filter Section ---
+    st.markdown("### 🛠️ Data Filters")
+    with st.container():
+        col1, col2, col3 = st.columns(3)
+        
         with col1:
             subject_codes = sorted(df[config["subject_code_col"]].dropna().unique()) if config["subject_code_col"] in df.columns else []
-            sel_codes = st.multiselect(
-                "📚 Select Subject Codes",
-                options=subject_codes,
-                default=subject_codes,
-                help="Choose specific subjects to analyze"
-            )
+            sel_codes = st.multiselect("Subjects", options=subject_codes, default=subject_codes)
 
         with col2:
             semesters = sorted(df[config["semester_col"]].dropna().unique()) if config["semester_col"] in df.columns else []
-            sel_sem = st.multiselect(
-                "📅 Select Semesters",
-                options=semesters,
-                default=semesters,
-                help="Choose specific semesters to analyze"
-            )
+            sel_sem = st.multiselect("Semesters", options=semesters, default=semesters)
 
         with col3:
             sections = sorted(df["Section"].dropna().unique()) if "Section" in df.columns else []
-            sel_section = st.multiselect(
-                "🏷 Select Sections",
-                options=sections,
-                default=sections,
-                help="Filter students by section"
-            )
+            sel_section = st.multiselect("Sections", options=sections, default=sections)
 
+    # Apply filters
     filtered = df.copy()
-    # Apply filters only when the user has selected specific values
     if sel_codes:
         filtered = filtered[filtered[config["subject_code_col"]].isin(sel_codes)]
     if sel_sem:
@@ -430,34 +382,7 @@ def main():
     if "Section" in filtered.columns and sel_section:
         filtered = filtered[filtered["Section"].isin(sel_section)]
 
-    st.markdown("<br><br>", unsafe_allow_html=True)
-
-    # Enhanced data preview and debug info
-    col1, col2 = st.columns([3, 1])
-
-    with col1:
-        st.markdown("### 📋 Data Preview")
-        with st.expander("View Raw Data (First 50 rows)", expanded=False):
-            st.dataframe(filtered.head(50), use_container_width=True)
-
-    with col2:
-        with st.expander("🔍 Debug Info", expanded=False):
-            st.markdown("**Extracted Columns:**")
-            st.code("\n".join(original_columns), language="text")
-            st.markdown(f"**Total Columns:** {len(original_columns)}")
-            st.markdown(f"**Filtered Columns:** {len(filtered.columns)}")
-            
-            # Show Raw OCR text if PDF was uploaded
-            if uploaded:
-                st.markdown("---")
-                st.markdown("**Raw OCR/PDF Text:**")
-                for f in uploaded:
-                    if f.name.lower().endswith('.pdf'):
-                        f.seek(0)
-                        raw_txt = extract_text_from_pdf(f.read())
-                        st.text_area(f"Text from {f.name}", raw_txt, height=200)
-
-    # Compute analytics
+    # --- Data Processing ---
     per_student = compute_student_status(
         df=filtered,
         rollno_col=config["rollno_col"],
@@ -469,189 +394,10 @@ def main():
         min_external=config["min_external"],
     )
     
-    # ---------------- CORRECT ABSENT HANDLING ----------------
-
-    # Find students who were absent in at least one subject
-    # Students absent in ALL subjects
-    absent_students = (per_student["Status"] == "ABSENT").sum()
-
-    # Students to include in academic performance
+    # Exclude Absent students from analytics
     analysis_students = per_student[per_student["Status"] != "ABSENT"].copy()
-
-    # --- SGPA & Credit Configuration ---
-    st.sidebar.markdown("### ⚙️ SGPA Config")
-    with st.sidebar.expander("📝 Subject Credits", expanded=False):
-        st.info("Assign credits to subjects for SGPA calculation.")
-        unique_subjects = sorted(filtered[config["subject_code_col"]].unique())
-        # Default credit DataFrame
-        credit_df = pd.DataFrame({"Subject Code": unique_subjects, "Credit": [4] * len(unique_subjects)})
-        
-        # Helper dict to store session credits if needed, for now just use editor
-        edited_credits = st.data_editor(
-            credit_df,
-            column_config={
-                "Credit": st.column_config.NumberColumn("Credit", min_value=0, max_value=10, step=1)
-            },
-            hide_index=True,
-            use_container_width=True,
-            key="credit_editor"
-        )
-        # Convert to dictionary
-        credit_map = dict(zip(edited_credits["Subject Code"], edited_credits["Credit"]))
-
-    # Compute SGPA
-    per_student = compute_sgpa(
-        per_student=per_student,
-        df=filtered,
-        subject_credits=credit_map,
-        subject_code_col=config["subject_code_col"],
-        total_col=config["total_col"],
-        result_col=config["result_col"]
-    )
-    if "Section" in filtered.columns:
-        per_student = per_student.merge(
-            filtered[["USN", "Section"]].drop_duplicates(),
-            on="USN",
-            how="left"
-        )
-    st.markdown("<br><br>", unsafe_allow_html=True)
-
-    # --- Toppers Section ---
-    st.markdown("### 🏆 Class Toppers (SGPA ≥ 9)")
-
-    ranked_students = per_student[per_student["SGPA"] >= 9].sort_values(
-        by=["SGPA", "SubjectsPassed"], ascending=[False, False]
-    ).reset_index(drop=True)
-
-    ranked_students["Rank"] = ranked_students.index + 1
-
-    if not ranked_students.empty:
-        st.dataframe(
-            ranked_students[[config['rollno_col'], config['name_col'], 'SGPA', 'SubjectsPassed', 'Rank']],
-            use_container_width=True
-        )
-    else:
-        st.info("No students with SGPA ≥ 9.")
-
-    # --- SGPA Distribution and Stats ---
-    # col1: Histogram, col2: Summary Stats
     
-    st.markdown("### 📊 SGPA Analytics")
-    colA, colB = st.columns([2, 1])
-    
-    with colA:
-        import plotly.express as px
-        # Filter valid SGPAs (e.g., > 0)
-        valid_sgpa = per_student[(per_student['SGPA'] > 0) & (per_student['Status'] != "ABSENT")]
-        if not valid_sgpa.empty:
-            fig_hist = px.histogram(
-                valid_sgpa, 
-                x="SGPA", 
-                nbins=20, 
-                title="SGPA Distribution",
-                color_discrete_sequence=["#38bdf8"]
-            )
-            fig_hist.update_layout(
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-                font_color="#cbd5e1",
-                xaxis_title="SGPA",
-                yaxis_title="Count of Students",
-                margin=dict(t=40, l=20, r=20, b=20)
-            )
-            fig_hist.update_traces(marker_line_color="#1e293b", marker_line_width=1.5)
-            st.plotly_chart(fig_hist, use_container_width=True)
-        else:
-            st.warning("No valid SGPA data to display distribution.")
-
-    with colB:
-        # Quick stats table for SGPA
-        if not valid_sgpa.empty:
-            avg_sgpa = valid_sgpa['SGPA'].mean()
-            max_sgpa = valid_sgpa['SGPA'].max()
-            min_sgpa = valid_sgpa['SGPA'].min()
-            
-            st.markdown(
-                textwrap.dedent(f"""
-                <div style="background: #1e293b; border-radius: 12px; padding: 1.5rem; border: 1px solid #334155;">
-                    <h4 style="color: #f8fafc; margin-top: 0; margin-bottom: 1.5rem;">📈 Performance Stats</h4>
-                    <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #334155;">
-                        <span style="color: #94a3b8; font-size: 0.9rem; display: block;">Average SGPA</span>
-                        <span style="color: #38bdf8; font-size: 1.8rem; font-weight: 700; display: block;">{avg_sgpa:.2f}</span>
-                    </div>
-                    <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #334155;">
-                        <span style="color: #94a3b8; font-size: 0.9rem; display: block;">Highest SGPA</span>
-                        <span style="color: #22c55e; font-size: 1.8rem; font-weight: 700; display: block;">{max_sgpa:.2f}</span>
-                    </div>
-                    <div>
-                        <span style="color: #94a3b8; font-size: 0.9rem; display: block;">Lowest SGPA</span>
-                        <span style="color: #ef4444; font-size: 1.8rem; font-weight: 700; display: block;">{min_sgpa:.2f}</span>
-                    </div>
-                </div>
-                """),
-                unsafe_allow_html=True
-            )
-
-    st.markdown("<br><br>", unsafe_allow_html=True)
-
-    # --- Subject-wise Toppers ---
-    st.markdown("### 🏅 Subject-wise Performance")
-    
-    # Get list of subjects
-    available_subjects = sorted(filtered[config["subject_code_col"]].dropna().unique()) if config["subject_code_col"] in filtered.columns else []
-    
-    if available_subjects:
-        selected_subject = st.selectbox("Select Subject to View Toppers", available_subjects)
-        
-        # Filter for this subject
-        subj_df = filtered[filtered[config["subject_code_col"]] == selected_subject].copy()
-        
-        # Ensure Total is numeric
-        if config["total_col"] in subj_df.columns:
-            subj_df[config["total_col"]] = pd.to_numeric(subj_df[config["total_col"]], errors='coerce').fillna(0)
-            
-            # Sort by Total DESC
-            subj_toppers = subj_df.sort_values(by=config["total_col"], ascending=False)
-            
-            if not subj_toppers.empty:
-                col_top, col_list = st.columns([1, 2])
-                
-                with col_top:
-                    # #1 Topper
-                    topper = subj_toppers.iloc[0]
-                    name_val = topper.get(config['name_col'], 'Unknown')
-                    usn_val = topper.get(config['rollno_col'], 'Unknown')
-                    score_val = int(topper.get(config['total_col'], 0))
-                    
-                    st.markdown(
-                        textwrap.dedent(f"""
-                        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 2rem; text-align: center; margin-bottom: 1rem;">
-                            <div style="color: #f59e0b; font-size: 1rem; font-weight: 700; letter-spacing: 2px; margin-bottom: 1rem;">SUBJECT TOPPER</div>
-                            <div style="font-size: 4rem; margin-bottom: 1rem; text-shadow: 0 4px 20px rgba(245, 158, 11, 0.5);">🥇</div>
-                            <h3 style="color: #f8fafc; margin: 0; font-size: 1.4rem; margin-bottom: 0.5rem;">{name_val}</h3>
-                            <div style="color: #94a3b8; font-size: 1rem; margin-bottom: 1.5rem;">{usn_val}</div>
-                            <div style="display: inline-block; background: rgba(245, 158, 11, 0.15); padding: 0.8rem 2rem; border-radius: 50px; border: 1px solid #f59e0b;">
-                                <span style="color: #cbd5e1; margin-right: 0.5rem; font-size: 0.9rem;">SCORE</span>
-                                <span style="color: #f59e0b; font-weight: 800; font-size: 1.5rem;">{score_val}</span>
-                            </div>
-                        </div>
-                        """),
-                        unsafe_allow_html=True
-                    )
-                
-                with col_list:
-                    # Top 10 Table
-                    st.markdown("#### 🔝 Top 10 Students")
-                    cols_to_show = [c for c in [config['rollno_col'], config['name_col'], config['total_col'], config['result_col']] if c in subj_toppers.columns]
-                    top_10 = subj_toppers.head(10)[cols_to_show].reset_index(drop=True)
-                    top_10.index = top_10.index + 1 # Rank 1-10
-                    st.dataframe(top_10, use_container_width=True)
-        else:
-            st.warning(f"Column '{config['total_col']}' not found in data.")
-    else:
-        st.info("No subjects found.")
-
-    # ================= SUBJECT STATISTICS =================
+    # Subject Stats
     per_subject = compute_subject_statistics(
         df=filtered,
         subject_code_col=config["subject_code_col"],
@@ -663,404 +409,176 @@ def main():
         min_external=config["min_external"],
     )
 
-    # ================= SECTION-WISE SUBJECT STATS =================
+    # Section Subject Stats (if Section exists)
     if "Section" in filtered.columns:
         section_subject_stats = (
-            filtered.groupby(
-                [config["subject_code_col"], config["subject_name_col"], "Section"]
-            )
+            filtered.groupby([config["subject_code_col"], config["subject_name_col"], "Section"])
             .agg(
                 Total=("USN", "count"),
                 Absent=("Result", lambda x: (x.astype(str).str.upper() == "A").sum()),
                 Passed=("Result", lambda x: x.astype(str).str.upper().str.contains(r"PASS|PASSED|^P$").sum())
-            )
-            .reset_index()
+            ).reset_index()
         )
-
         section_subject_stats["Appeared"] = section_subject_stats["Total"] - section_subject_stats["Absent"]
         section_subject_stats["Failed"] = section_subject_stats["Appeared"] - section_subject_stats["Passed"]
-        
-        # ---------------- FIXED: DIVISION BY ZERO SAFETY ----------------
         section_subject_stats["Pass%"] = (
             section_subject_stats["Passed"] / section_subject_stats["Appeared"].replace(0, pd.NA) * 100
         ).fillna(0).round(2)
-        
     else:
         section_subject_stats = pd.DataFrame()
 
-    # ================= OVERALL METRICS (ABSENT EXCLUDED) =================
-    total_students = per_student['USN'].dropna().astype(str).str.strip().replace('', pd.NA).dropna().nunique()
-
-    students_with_backlogs = analysis_students[analysis_students["Status"] == "FAIL"].shape[0]
-
-    pass_percentage = (
-        (analysis_students["Status"] == "PASS").mean() * 100
-        if not analysis_students.empty else 0
-    )
-
-    overall = {
-        "total_students": total_students,
-        "students_with_backlogs": students_with_backlogs,
-        "overall_pass_percentage": pass_percentage
-    }
-
-    # Enhanced summary dashboard
-    avg_pass_pct = per_subject['Pass%'].mean() if not per_subject.empty and 'Pass%' in per_subject.columns else 0.0
-    avg_appeared = per_subject['Appeared'].mean() if not per_subject.empty and 'Appeared' in per_subject.columns else 0.0
-
-    st.markdown("<br><hr><br>", unsafe_allow_html=True)
-    st.markdown("### 📊 Analysis Dashboard")
-
-    # KPI Cards in a responsive grid
+    # --- 3. Dashboard KPI Section ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    total_st = per_student['USN'].dropna().unique().shape[0]
+    backlogs = analysis_students[analysis_students["Status"] == "FAIL"].shape[0]
+    pass_pct = (analysis_students["Status"] == "PASS").mean() * 100 if not analysis_students.empty else 0
+    
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown(
-            textwrap.dedent(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">👥 Total Students</div>
-                <div class="kpi-value total">{total_students}</div>
-            </div>
-            """),
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"""
+        <div class="stat-card">
+            <div class="stat-label">👥 Total Students</div>
+            <div class="stat-value" style="color: #3b82f6;">{total_st}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     with col2:
-        st.markdown(
-            textwrap.dedent(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">⚠️ Students with Backlogs</div>
-                <div class="kpi-value fail">{overall['students_with_backlogs']}</div>
-            </div>
-            """),
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"""
+        <div class="stat-card">
+            <div class="stat-label">⚠️ With Backlogs</div>
+            <div class="stat-value" style="color: #ef4444;">{backlogs}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     with col3:
-        st.markdown(
-            textwrap.dedent(f"""
-            <div class="kpi-card">
-                <div class="kpi-label">✅ Overall Pass %</div>
-                <div class="kpi-value pass">{overall['overall_pass_percentage']:.1f}%</div>
-            </div>
-            """),
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"""
+        <div class="stat-card">
+            <div class="stat-label">✅ Pass Percentage</div>
+            <div class="stat-value" style="color: #10b981;">{pass_pct:.1f}%</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Enhanced insights section
-    with st.expander("📈 Detailed Insights", expanded=True):
-        st.markdown(
-            f"""
-            <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 12px; padding: 1.5rem; border-left: 4px solid #38bdf8; border: 1px solid #334155;">
-                <h4 style="color: #f8fafc; margin-bottom: 1rem;">📋 Summary Report</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                    <div style="background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid #334155; color: #cbd5e1;">
-                        <strong style="color: #38bdf8;">Total Students Analyzed:</strong> {total_students}
-                    </div>
-                    <div style="background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid #334155; color: #cbd5e1;">
-                        <strong style="color: #ef4444;">Students with Backlogs:</strong> {overall['students_with_backlogs']}
-                    </div>
-                    <div style="background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid #334155; color: #cbd5e1;">
-                        <strong style="color: #22c55e;">Overall Pass Rate:</strong> {overall['overall_pass_percentage']:.1f}%
-                    </div>
-                    <div style="background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid #334155; color: #cbd5e1;">
-                        <strong style="color: #818cf8;">Avg Subject Pass Rate:</strong> {avg_pass_pct:.1f}%
-                    </div>
-                </div>
-                <div style="margin-top: 1rem; padding: 1rem; background: rgba(15, 23, 42, 0.5); border-radius: 8px; color: #94a3b8;">
-                    <strong style="color: #e2e8f0;">Analysis Overview:</strong><br>
-                    Out of <strong>{total_students}</strong> students analyzed, <strong>{overall['students_with_backlogs']}</strong> have at least one backlog.
-                    The overall pass percentage stands at <strong>{overall['overall_pass_percentage']:.1f}%</strong>.
-                    Subjects show an average pass rate of <strong>{avg_pass_pct:.1f}%</strong> with <strong>{avg_appeared:.1f}</strong> students per subject on average.
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
 
-    # Enhanced result distribution visualization
-    st.markdown("### 📈 Result Distribution")
+    # --- 4. Charts & Detailed Stats ---
+    col_chart, col_toppers = st.columns([1, 1])
 
-    # Clean and prepare data for pie chart
-    pie_df = per_student.copy()
-    pie_df = pie_df[pie_df['USN'].notnull() & (pie_df['USN'].astype(str).str.strip() != '')]
-    pie_df = pie_df[pie_df['Status'].notnull() & (pie_df['Status'].astype(str).str.strip() != '')]
-    
-    # ---------------- FIXED: EXCLUDE ABSENT FROM PIE CHART ----------------
-    pie_df = pie_df[pie_df['Status'] != 'ABSENT']
-
-    # Only show PASS and FAIL
-    status_order = ['PASS', 'FAIL']
-    status_counts = pie_df['Status'].value_counts().reindex(status_order, fill_value=0).reset_index()
-    status_counts.columns = ['Status', 'Count']
-    total = status_counts['Count'].sum()
-    status_counts['Percent'] = status_counts['Count'] / total * 100 if total else 0
-
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-        import plotly.graph_objects as go
-        pie_colors = [
-            "#10b981" if s == "PASS"
-            else "#ef4444" if s == "FAIL"
-            else "#f59e0b"
-            for s in status_counts["Status"]
-        ]
-
-        fig = go.Figure(
-            go.Pie(
-                labels=status_counts["Status"],
-                values=status_counts["Count"],
-                hole=0.6,
-                marker=dict(colors=pie_colors, line=dict(color="#ffffff", width=3)),
-                textinfo="label+percent",
-                textfont_size=16,
-                pull=[0.05 if s == "FAIL" else 0 for s in status_counts["Status"]],
-                insidetextorientation="radial",
-            )
-        )
+    with col_chart:
+        st.markdown("#### 🍩 Pass/Fail Distribution")
+        
+        # Prepare Pie Data (Exclude Absent)
+        pie_df = per_student[per_student['Status'] != 'ABSENT']
+        status_counts = pie_df['Status'].value_counts().reset_index()
+        status_counts.columns = ['Status', 'Count']
+        
+        fig = go.Figure(go.Pie(
+            labels=status_counts["Status"],
+            values=status_counts["Count"],
+            hole=0.6,
+            marker=dict(colors=['#10b981', '#ef4444']), # Green, Red
+            textinfo="label+percent",
+        ))
         fig.update_layout(
-            showlegend=True,
-            legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
-            margin=dict(t=50, b=100, l=50, r=50),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(size=14),
-            annotations=[
-                dict(
-                    text=f"<b>{total}</b><br><span style='font-size:12px;'>Total Students</span>",
-                    x=0.5, y=0.5, font_size=20, showarrow=False, font_color="#f8fafc"
-                )
-            ],
+            font=dict(color="#94a3b8"),
+            showlegend=False,
+            margin=dict(t=20, b=20, l=20, r=20)
         )
         st.plotly_chart(fig, use_container_width=True)
 
-    with col2:
-        st.markdown("#### 📊 Statistics")
-        for _, row in status_counts.iterrows():
-            if row['Status'] == "PASS":
-                color = "🟢"
-                border_color = "#22c55e"
-            elif row['Status'] == "FAIL":
-                color = "🔴"
-                border_color = "#ef4444"
-            else:
-                color = "🟠"
-                border_color = "#f59e0b"
-            bg_color = "#0f172a"
-
-            st.markdown(
-                f"""
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: {bg_color}; border: 1px solid {border_color}; border-radius: 8px; margin-bottom: 0.5rem; color: #f8fafc;">
-                    <span style="font-weight: 600;">{color} {row['Status']}</span>
-                    <span style="font-size: 1.2rem; font-weight: 700;">{int(row['Count'])}</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        
-        pass_rate_val = status_counts[status_counts['Status']=='PASS']['Percent'].values[0] if not status_counts[status_counts['Status']=='PASS'].empty else 0
-        st.markdown(
-            f"""
-            <div style="padding: 1rem; background: #0f172a; border-radius: 8px; border-left: 4px solid #38bdf8; border: 1px solid #334155;">
-                <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.5rem;">Pass Rate</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: #f8fafc;">{pass_rate_val:.1f}%</div>
+    with col_toppers:
+        st.markdown("#### 🏅 Quick Statistics")
+        st.markdown(f"""
+        <div style="background: var(--surface-dark); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
+                <span>Passing Students</span>
+                <span style="color:#10b981; font-weight:700;">{status_counts[status_counts['Status']=='PASS']['Count'].sum()}</span>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            <div style="display:flex; justify-content:space-between;">
+                <span>Failing Students</span>
+                <span style="color:#ef4444; font-weight:700;">{status_counts[status_counts['Status']=='FAIL']['Count'].sum()}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Enhanced student analysis sections
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "👤 Student Status",
-        "📚 Individual Results",
-        "📊 Complete Analysis",
-        "📖 Subject Statistics",
-        "🏷 Section-wise Subject Stats"
-    ])
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- 5. Tabs for Detailed Data ---
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "📚 Subject Stats", "👥 Students", "🏷 Section Stats"])
 
     with tab1:
-        st.markdown("#### 👥 Per-Student Status Overview")
-        if "Section" in per_student.columns:
-            st.dataframe(per_student.sort_values("Section"), use_container_width=True)
-        else:
-            st.dataframe(per_student, use_container_width=True)
+        st.markdown("##### Full Result Matrix")
+        st.dataframe(per_student, use_container_width=True, height=400)
 
     with tab2:
-        st.markdown("#### 📚 Individual Student Subject-wise Results")
-        # Clean up columns to show only relevant info
-        columns_to_exclude = [': 4MW23CS003', 'Announced/ Updated on', 'Internal', 'Internal\nMarks', 'Unnamed: 0']
-        columns_to_show = [col for col in filtered.columns if col not in columns_to_exclude]
-        usn_list = filtered['USN'].dropna().astype(str).str.strip().replace('', pd.NA).dropna().unique()
-
-        # Search and filter functionality
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            search_usn = st.text_input("🔍 Search by USN", placeholder="Enter USN to filter results...")
-        with col2:
-            show_all = st.checkbox("Show All Students", value=False)
-
-        # Filter USN list based on search
-        if search_usn:
-            usn_list = [usn for usn in usn_list if search_usn.upper() in str(usn).upper()]
-
-        if not show_all and len(usn_list) > 10:
-            st.info(f"Showing first 10 students. Use search to find specific students or check 'Show All Students'.")
-            usn_list = usn_list[:10]
-
-        for usn in usn_list:
-            student_df = filtered[filtered['USN'] == usn]
-            if student_df.empty:
-                continue
-            name = student_df['Name'].iloc[0] if 'Name' in student_df.columns and not student_df['Name'].isnull().all() else 'Unknown'
-            sem = student_df['Semester'].iloc[0] if 'Semester' in student_df.columns and not student_df['Semester'].isnull().all() else 'N/A'
-
-            # Calculate student stats
-            total_subjects = len(student_df)
-            absent_sub = (student_df['Result'].astype(str).str.upper() == "A").sum()
-            passed = (student_df['Result'].astype(str).str.upper().str.contains(r"PASS|PASSED|^P$")).sum()
-            failed = total_subjects - passed - absent_sub
-            pass_rate = (passed / total_subjects * 100) if total_subjects > 0 else 0
-
-            # Color coding based on performance
-            if pass_rate == 100:
-                status_color = "#10b981"
-                status_icon = "✅"
-            elif pass_rate >= 50:
-                status_color = "#f59e0b"
-                status_icon = "⚠️"
-            else:
-                status_color = "#ef4444"
-                status_icon = "❌"
-
-            with st.expander(f"{status_icon} USN: {usn} | Name: {name} | Semester: {sem} | Pass Rate: {pass_rate:.1f}%", expanded=False):
-                try:
-                    st.dataframe(
-                        student_df[columns_to_show],
-                        use_container_width=True,
-                        hide_index=True
-                    )
-                    # Enhanced summary with color coding
-                    st.markdown(
-                        f"""
-                        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 8px; padding: 1rem; border-left: 4px solid {status_color}; border: 1px solid #334155;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div style="color: #cbd5e1;">
-                                    <strong>Performance Summary:</strong> {passed} Passed / {failed} Failed out of {total_subjects} subjects
-                                </div>
-                                <div style="font-size: 1.2rem; font-weight: 700; color: {status_color};">
-                                    {pass_rate:.1f}% Pass Rate
-                                </div>
-                            </div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-                except Exception as e:
-                    st.error(f"Error displaying data for USN {usn}: {e}")
-
-    with tab3:
-        st.markdown("#### 📊 Complete Student Analysis")
-        # Clean up per_student columns for clarity
-        per_student_clean = per_student.copy()
-        if 'Semester' in per_student_clean.columns:
-            per_student_clean['Semester'] = per_student_clean['Semester'].replace(0, 'N/A')
-        # Remove rows with empty or invalid USN
-        if 'USN' in per_student_clean.columns:
-            per_student_clean = per_student_clean[per_student_clean['USN'].notnull() & (per_student_clean['USN'].astype(str).str.strip() != '')]
-        st.dataframe(per_student_clean, use_container_width=True, hide_index=True)
-
-    with tab4:
-        st.markdown("#### 📖 Subject-wise Statistics")
+        st.markdown("##### Subject-wise Performance")
         st.dataframe(per_subject, use_container_width=True)
 
-    with tab5:
-        st.markdown("#### 🏷 Subject Performance by Section")
-        if section_subject_stats.empty:
-            st.info("Section column not found in uploaded data.")
+    with tab3:
+        st.markdown("##### Student Search")
+        search = st.text_input("Enter USN or Name", placeholder="Search...")
+        if search:
+            res = per_student[per_student['USN'].str.contains(search, case=False, na=False) | 
+                              per_student['Name'].str.contains(search, case=False, na=False)]
+            st.dataframe(res, use_container_width=True)
         else:
-            subject_filter = st.selectbox(
-                "Select Subject",
-                sorted(section_subject_stats[config["subject_code_col"]].unique())
-            )
+            st.info("Type above to search specific student records.")
 
-            display_df = section_subject_stats[
-                section_subject_stats[config["subject_code_col"]] == subject_filter
-            ].sort_values("Section")
+    with tab4:
+        if not section_subject_stats.empty:
+            st.markdown("##### Section-wise Breakdown")
+            st.dataframe(section_subject_stats, use_container_width=True)
+        else:
+            st.warning("No Section data found in the uploaded files.")
 
-            st.dataframe(display_df, use_container_width=True)
+    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
 
-    # Enhanced export section
-    st.markdown("### 💾 Export Results")
-    st.markdown("Download your analysis results in various formats:")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        excel_bytes = build_excel_summary(raw=filtered, per_student=per_student, per_subject=per_subject)
+    # --- 6. Export Section (Redesigned) ---
+    st.markdown("### 💾 Export Reports")
+    st.markdown("Download comprehensive reports for your records.")
+    
+    # Row 1: Main Summaries
+    c1, c2, c3 = st.columns(3)
+    
+    with c1:
+        excel_data = build_excel_summary(filtered, per_student, per_subject)
         st.download_button(
-            label="📊 Excel Summary",
-            data=excel_bytes,
-            file_name="vtu-results-summary.xlsx",
+            "📊 Full Excel Summary",
+            data=excel_data,
+            file_name="Full_Analysis_Report.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            help="Complete analysis with multiple sheets"
+            help="Contains Analysis, Student Results, and Subject Stats"
         )
-
-    with col2:
-        # Failed students CSV
-        failed_usns = per_student[per_student["Status"] == "FAIL"]["USN"]
-        failed_df = filtered[filtered["USN"].isin(failed_usns)][
-            ["USN", "Name", "Subject Code", "Subject Name", "Result"]
-        ]
-        failed_csv = failed_df.to_csv(index=False).encode()
+    
+    with c2:
+        pdf_data = build_pdf_summary(per_student, per_subject, {"total_students": total_st, "students_with_backlogs": backlogs, "overall_pass_percentage": pass_pct})
         st.download_button(
-            label="❌ Failed Students (CSV)",
-            data=failed_csv,
-            file_name="failed_students.csv",
-            mime="text/csv",
-            help="List of students who failed"
-        )
-
-    with col3:
-        # PDF summary
-        pdf_bytes = build_pdf_summary(per_student=per_student, per_subject=per_subject, overall=overall)
-        st.download_button(
-            label="📄 PDF Summary",
-            data=pdf_bytes,
-            file_name="vtu-results-summary.pdf",
+            "📄 Official PDF Report",
+            data=pdf_data,
+            file_name="Result_Summary.pdf",
             mime="application/pdf",
-            help="Professional PDF report"
+            help="Print-ready PDF report"
+        )
+        
+    with c3:
+        failed_usns = per_student[per_student["Status"] == "FAIL"]["USN"]
+        failed_df = filtered[filtered["USN"].isin(failed_usns)][["USN", "Name", "Subject Code", "Result"]]
+        st.download_button(
+            "❌ Failed List (CSV)",
+            data=failed_df.to_csv(index=False).encode(),
+            file_name="Failed_Students.csv",
+            mime="text/csv"
         )
 
-    # Additional export options
-    with st.expander("📤 More Export Options", expanded=False):
-        row1_col1, row1_col2 = st.columns(2)
-        row2_col1, row2_col2 = st.columns(2)
-
-        with row1_col1:
-            # All students CSV
-            all_students_csv = per_student.to_csv(index=False).encode()
-            st.download_button(
-                label="👥 All Students (CSV)",
-                data=all_students_csv,
-                file_name="all_students.csv",
-                mime="text/csv",
-                help="Complete student analysis data"
-            )
-
-        with row1_col2:
-            # Subject statistics CSV
-            subject_csv = per_subject.to_csv(index=False).encode()
-            st.download_button(
-                label="📚 Subject Statistics (CSV)",
-                data=subject_csv,
-                file_name="subject_statistics.csv",
-                mime="text/csv",
-                help="Subject-wise performance data"
-            )
+    # Row 2: Advanced Exports
+    with st.expander("🔽 Advanced Export Options"):
+        ac1, ac2, ac3 = st.columns(3)
         
-        with row2_col1:
-            # Section-wise Summary Report
+        with ac1:
+            # Section Summary (One sheet per section)
             if "Section" in per_student.columns:
                 try:
                     output = io.BytesIO()
@@ -1068,107 +586,69 @@ def main():
                         unique_sections = sorted(per_student["Section"].dropna().unique())
                         for sec in unique_sections:
                             sec_df = per_student[per_student["Section"] == sec]
-                            safe_sheet_name = f"Section_{sec}"[:31].replace('[', '').replace(']', '').replace(':', '')
-                            sec_df.to_excel(writer, sheet_name=safe_sheet_name, index=False)
-                    
+                            safe_name = f"Sec_{sec}"[:31].replace(':','')
+                            sec_df.to_excel(writer, sheet_name=safe_name, index=False)
                     output.seek(0)
-                    st.download_button(
-                        label="📑 Section Student Summary (Excel)",
-                        data=output,
-                        file_name="section_student_summary.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        help="Student-wise results grouped by section sheets."
-                    )
-                except Exception as e:
-                    st.error(f"Could not generate section summary: {e}")
-            else:
-                st.info("Section info unavailable")
-        
-        with row2_col2:
-            # ---------------- NEW FEATURE: Section-wise Subject Stats (User Request) ----------------
+                    st.download_button("📑 Section Student Lists", data=output, file_name="Section_Students.xlsx", mime="application/vnd.ms-excel")
+                except: st.error("Error generating report")
+            else: st.caption("No Section Data")
+
+        with ac2:
+            # Section Subject Stats
             if "Section" in filtered.columns:
                 try:
-                    output_subject_stats = io.BytesIO()
-                    with pd.ExcelWriter(output_subject_stats, engine='xlsxwriter') as writer:
+                    output_stats = io.BytesIO()
+                    with pd.ExcelWriter(output_stats, engine='xlsxwriter') as writer:
                         unique_sections = sorted(filtered["Section"].dropna().unique())
                         for sec in unique_sections:
-                            # 1. Filter for section
                             sec_data = filtered[filtered["Section"] == sec]
-
-                            # 2. Group by Subject Code and Name
                             stats = sec_data.groupby([config["subject_code_col"], config["subject_name_col"]]).agg(
-                                Total_Students=('USN', 'count'),
+                                Total=('USN', 'count'),
                                 Absent=('Result', lambda x: (x.astype(str).str.upper() == 'A').sum()),
                                 Passed=('Result', lambda x: x.astype(str).str.upper().str.contains(r'PASS|PASSED|^P$').sum())
                             ).reset_index()
-
-                            # 3. Calculate Derived Columns
-                            stats['Appeared'] = stats['Total_Students'] - stats['Absent']
+                            stats['Appeared'] = stats['Total'] - stats['Absent']
                             stats['Failed'] = stats['Appeared'] - stats['Passed']
-                            stats['Pass_Percentage'] = (stats['Passed'] / stats['Appeared'].replace(0, pd.NA) * 100).fillna(0).round(2)
+                            stats['Pass%'] = (stats['Passed'] / stats['Appeared'].replace(0, pd.NA) * 100).fillna(0).round(2)
+                            safe_name = f"Sec_{sec}"[:31].replace(':','')
+                            stats.to_excel(writer, sheet_name=safe_name, index=False)
+                    output_stats.seek(0)
+                    st.download_button("📊 Section Subject Stats", data=output_stats, file_name="Section_Subject_Stats.xlsx", mime="application/vnd.ms-excel")
+                except: st.error("Error generating report")
+            else: st.caption("No Section Data")
 
-                            # 4. Reorder Columns for Report
-                            stats = stats[[config["subject_code_col"], config["subject_name_col"], 
-                                           'Total_Students', 'Absent', 'Appeared', 'Passed', 'Failed', 'Pass_Percentage']]
+        with ac3:
+            # Broadsheet Matrix
+            if "Section" in filtered.columns:
+                try:
+                    output_matrix = io.BytesIO()
+                    with pd.ExcelWriter(output_matrix, engine='xlsxwriter') as writer:
+                        unique_sections = sorted(filtered["Section"].dropna().unique())
+                        for sec in unique_sections:
+                            sec_raw = filtered[filtered["Section"] == sec]
+                            pivot_df = sec_raw.pivot_table(
+                                index=['USN', 'Name'], 
+                                columns=config['subject_code_col'], 
+                                values=[config['total_col'], config['result_col']],
+                                aggfunc='first'
+                            )
+                            # Flatten columns
+                            pivot_df = pivot_df.swaplevel(0, 1, axis=1).sort_index(axis=1)
+                            pivot_df.columns = [f"{c[0]}_{c[1]}" for c in pivot_df.columns]
+                            safe_name = f"Matrix_{sec}"[:31].replace(':','')
+                            pivot_df.to_excel(writer, sheet_name=safe_name)
+                    output_matrix.seek(0)
+                    st.download_button("📉 Result Matrix (Broadsheet)", data=output_matrix, file_name="Result_Matrix.xlsx", mime="application/vnd.ms-excel")
+                except: st.error("Error generating report")
+            else: st.caption("No Section Data")
 
-                            # 5. Write to Sheet
-                            safe_sheet_name = f"Section_{sec}"[:31].replace('[', '').replace(']', '').replace(':', '')
-                            stats.to_excel(writer, sheet_name=safe_sheet_name, index=False)
-                            
-                    output_subject_stats.seek(0)
-                    st.download_button(
-                        label="📊 Section-wise Subject Stats (Excel)",
-                        data=output_subject_stats,
-                        file_name="section_subject_stats.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        help="Subject-wise performance (Total, Absent, Present, Pass, Fail, %) separated by Section sheets."
-                    )
-                except Exception as e:
-                    st.error(f"Could not generate subject stats: {e}")
-            else:
-                st.info("Section info unavailable")
-
-
-    # --- Final Footer Section ---
-    st.markdown("<br><hr style='border: 0.5px solid #334155;'><br>", unsafe_allow_html=True)
-    st.markdown(
-        """
-        <div style="text-align: center; padding: 1.5rem; background: rgba(30, 41, 59, 0.4); border-radius: 12px; border: 1px solid #334155;">
-        <h4 style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1.1rem;">Project Team</h4>
-        <p style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Student Contributors</p>
-
-        <div style="display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
-            <div style="background: rgba(15, 23, 42, 0.6); padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #334155;">
-                <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700; display: block;">4MW24CS400</span>
-                <span style="color: #f8fafc; font-size: 0.9rem;">Aditya K Shenava</span>
-            </div>
-            <div style="background: rgba(15, 23, 42, 0.6); padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #334155;">
-                <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700; display: block;">4MW24CS401</span>
-                <span style="color: #f8fafc; font-size: 0.9rem;">Amith Suvarna</span>
-            </div>
-            <div style="background: rgba(15, 23, 42, 0.6); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #334155;">
-                <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700; display: block;">4MW24CS403</span>
-                <span style="color: #f8fafc; font-size: 0.9rem;">Prajanth</span>
-            </div>
-            <div style="background: rgba(15, 23, 42, 0.6); padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #334155;">
-                <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700; display: block;">4MW24CS404</span>
-                <span style="color: #f8fafc; font-size: 0.9rem;">Preetham</span>
-            </div>
-        </div>
-
-        <div style="border-top: 1px solid #334155; padding-top: 1rem;">
-            <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0px;">Guide</p>
-            <h4 style="color: #f8fafc; margin: 0; font-size: 1.2rem; font-weight: 700;">Raghavendra G S</h4>
-            <p style="margin-top: 5px; color: #cbd5e1; font-size: 0.85rem; line-height: 1.4;">
-                <span style="color: #38bdf8; font-weight: 600;">Department:</span> Computer Science and Engineering<br>
-                <span style="color: #38bdf8; font-weight: 600;">College:</span> Shri Madhwa Vadiraja Institute of Technology & Management (SMVITM), Bantakal
-            </p>
-        </div>
-        <p style="margin-top: 1.5rem; color: #475569; font-size: 0.7rem;">© 2025 - 2026 VTU Result Analyser</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    # --- Footer ---
+    st.markdown("<div style='margin-top: 5rem;'></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="text-align: center; color: #64748b; font-size: 0.8rem;">
+        <p>© 2025 VTU Analytics • SMVITM</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
