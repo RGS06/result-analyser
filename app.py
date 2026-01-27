@@ -712,7 +712,7 @@ def main():
     st.markdown("### 📊 Analysis Dashboard")
 
     # KPI Cards in a responsive grid
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown(
@@ -744,16 +744,6 @@ def main():
                 <div class="kpi-value pass">{overall['overall_pass_percentage']:.1f}%</div>
             </div>
             """),
-            unsafe_allow_html=True,
-        )
-    with col4:
-        st.markdown(
-            f"""
-            <div class="kpi-card">
-                <div class="kpi-label">🚫 Absent Students</div>
-                <div class="kpi-value" style="color:#f59e0b;">{absent_students}</div>
-            </div>
-            """,
             unsafe_allow_html=True,
         )
 
@@ -795,9 +785,12 @@ def main():
     pie_df = per_student.copy()
     pie_df = pie_df[pie_df['USN'].notnull() & (pie_df['USN'].astype(str).str.strip() != '')]
     pie_df = pie_df[pie_df['Status'].notnull() & (pie_df['Status'].astype(str).str.strip() != '')]
+    
+    # ---------------- FIXED: EXCLUDE ABSENT FROM PIE CHART ----------------
+    pie_df = pie_df[pie_df['Status'] != 'ABSENT']
 
-    # Always show both PASS and FAIL, even if one is zero
-    status_order = ['PASS', 'FAIL', 'ABSENT']
+    # Only show PASS and FAIL
+    status_order = ['PASS', 'FAIL']
     status_counts = pie_df['Status'].value_counts().reindex(status_order, fill_value=0).reset_index()
     status_counts.columns = ['Status', 'Count']
     total = status_counts['Count'].sum()
