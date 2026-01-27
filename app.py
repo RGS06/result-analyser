@@ -44,7 +44,9 @@ def check_dependencies():
 check_dependencies()
 
 def _get_footer_html() -> str:
-    """Returns the HTML for the credit-card style footer."""
+    """Returns the HTML for the credit-card style footer. 
+    IMPORTANT: No indentation in the string to prevent Markdown code-block rendering.
+    """
     return """
 <div style="max-width: 420px; margin: 4rem auto 2rem auto; padding: 1.5rem; background: linear-gradient(135deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); backdrop-filter: blur(12px); font-family: 'Inter', sans-serif; position: relative; overflow: hidden;">
 <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); pointer-events: none;"></div>
@@ -239,9 +241,12 @@ def _show_header() -> bool:
            FIXED: FILTER TAG COLORS (MultiSelect)
            ---------------------------------------------------- */
         span[data-baseweb="tag"] {
-            background-color: rgba(59, 130, 246, 0.8) !important; /* Blue background */
+            background-color: rgba(59, 130, 246, 0.2) !important; /* Blue background */
             border: 1px solid #3b82f6 !important;
             color: white !important; /* Clearly visible white text */
+        }
+        span[data-baseweb="tag"] span {
+             color: white !important;
         }
         
         /* 6. Tabs & Utilities */
@@ -276,7 +281,6 @@ def _show_header() -> bool:
         """
         <div class="hero-header fade-in">
             <h1 class="hero-title">VTU Results Analytics</h1>
-            <p class="hero-subtitle">Advanced Performance Intelligence for Departments</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -480,7 +484,7 @@ def main():
     with col1:
         st.markdown(f"""
         <div class="stat-card">
-            <div class="stat-label">👥 Total Students</div>
+            <div class="stat-label">Total Students</div>
             <div class="stat-value" style="color: #3b82f6;">{total_st}</div>
         </div>
         """, unsafe_allow_html=True)
@@ -488,7 +492,7 @@ def main():
     with col2:
         st.markdown(f"""
         <div class="stat-card">
-            <div class="stat-label">⚠️ With Backlogs</div>
+            <div class="stat-label">With Backlogs</div>
             <div class="stat-value" style="color: #ef4444;">{backlogs}</div>
         </div>
         """, unsafe_allow_html=True)
@@ -496,7 +500,7 @@ def main():
     with col3:
         st.markdown(f"""
         <div class="stat-card">
-            <div class="stat-label">✅ Pass Percentage</div>
+            <div class="stat-label">Pass Percentage</div>
             <div class="stat-value" style="color: #10b981;">{pass_pct:.1f}%</div>
         </div>
         """, unsafe_allow_html=True)
@@ -555,14 +559,14 @@ def main():
                     <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.2rem;">Passing Students</div>
                     <div style="color:#10b981; font-weight:700; font-size:1.5rem;">{pass_count}</div>
                 </div>
-                <div style="background:rgba(16, 185, 129, 0.1); padding:0.5rem; border-radius:8px;">✅</div>
+                <div style="background:rgba(16, 185, 129, 0.1); padding:0.5rem; border-radius:8px;"></div>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.2rem;">Failing Students</div>
                     <div style="color:#ef4444; font-weight:700; font-size:1.5rem;">{fail_count}</div>
                 </div>
-                <div style="background:rgba(239, 68, 68, 0.1); padding:0.5rem; border-radius:8px;">❌</div>
+                <div style="background:rgba(239, 68, 68, 0.1); padding:0.5rem; border-radius:8px;"></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -604,8 +608,8 @@ def main():
             max_sgpa = valid_sgpa['SGPA'].max()
             min_sgpa = valid_sgpa['SGPA'].min()
             
-            # Custom Vertical "Control Panel" Style for Stats
-            st.markdown(f"""
+            # --- FIXED: Use textwrap.dedent to ensure correct HTML rendering ---
+            st.markdown(textwrap.dedent(f"""
             <div style="display: flex; flex-direction: column; gap: 1rem;">
                 <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -631,7 +635,7 @@ def main():
                     <div style="font-size: 1.5rem;">📉</div>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """), unsafe_allow_html=True)
     else:
         st.info("No SGPA data available to display statistics.")
 
