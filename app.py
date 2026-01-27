@@ -44,35 +44,37 @@ def check_dependencies():
 check_dependencies()
 
 def _get_footer_html() -> str:
-    """Returns the HTML for the credit-card style footer without indentation issues."""
+    """Returns the HTML for the credit-card style footer. 
+    IMPORTANT: No indentation in the string to prevent Markdown code-block rendering.
+    """
     return """
 <div style="max-width: 420px; margin: 4rem auto 2rem auto; padding: 1.5rem; background: linear-gradient(135deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); backdrop-filter: blur(12px); font-family: 'Inter', sans-serif; position: relative; overflow: hidden;">
-    <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); pointer-events: none;"></div>
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; position: relative;">
-        <div>
-            <div style="color: #64748b; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;">PROJECT TEAM</div>
-            <div style="color: #f1f5f9; font-weight: 700; font-size: 1.1rem; margin-top: 0.2rem; letter-spacing: -0.5px;">VTU Analytics</div>
-        </div>
-        <div style="text-align: right;">
-            <div style="color: #38bdf8; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px;">GUIDE</div>
-            <div style="color: #cbd5e1; font-size: 0.8rem; margin-top: 0.1rem;">Raghavendra G S</div>
-        </div>
-    </div>
-    <div style="margin-bottom: 1.5rem; position: relative;">
-        <div style="color: #64748b; font-size: 0.6rem; margin-bottom: 0.5rem; font-weight: 600;">CONTRIBUTORS</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-            <span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Aditya K S</span>
-            <span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Amith S</span>
-            <span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Prajanth</span>
-            <span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Preetham</span>
-        </div>
-    </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem; position: relative;">
-            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 500;">
-            SMVITM • CSE DEPT • 2025
-            </div>
-            <div style="width: 30px; height: 20px; background: linear-gradient(135deg, #fbbf24, #d97706); border-radius: 4px; opacity: 0.8;"></div>
-    </div>
+<div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); pointer-events: none;"></div>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; position: relative;">
+<div>
+<div style="color: #64748b; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;">PROJECT TEAM</div>
+<div style="color: #f1f5f9; font-weight: 700; font-size: 1.1rem; margin-top: 0.2rem; letter-spacing: -0.5px;">VTU Analytics</div>
+</div>
+<div style="text-align: right;">
+<div style="color: #38bdf8; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px;">GUIDE</div>
+<div style="color: #cbd5e1; font-size: 0.8rem; margin-top: 0.1rem;">Raghavendra G S</div>
+</div>
+</div>
+<div style="margin-bottom: 1.5rem; position: relative;">
+<div style="color: #64748b; font-size: 0.6rem; margin-bottom: 0.5rem; font-weight: 600;">CONTRIBUTORS</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px;">
+<span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Aditya K S</span>
+<span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Amith S</span>
+<span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Prajanth</span>
+<span style="background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; color: #bae6fd; font-family: 'JetBrains Mono', monospace;">Preetham</span>
+</div>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem; position: relative;">
+<div style="font-size: 0.65rem; color: #94a3b8; font-weight: 500;">
+SMVITM • CSE DEPT • 2025
+</div>
+<div style="width: 30px; height: 20px; background: linear-gradient(135deg, #fbbf24, #d97706); border-radius: 4px; opacity: 0.8;"></div>
+</div>
 </div>
 """
 
@@ -233,6 +235,15 @@ def _show_header() -> bool:
             border-color: var(--border-color) !important;
             border-radius: 8px !important;
             color: var(--text-primary) !important;
+        }
+        
+        /* ----------------------------------------------------
+           FIXED: FILTER TAG COLORS (MultiSelect)
+           ---------------------------------------------------- */
+        span[data-baseweb="tag"] {
+            background-color: rgba(59, 130, 246, 0.8) !important; /* Blue background */
+            border: 1px solid #3b82f6 !important;
+            color: white !important; /* Clearly visible white text */
         }
         
         /* 6. Tabs & Utilities */
@@ -656,6 +667,7 @@ def main():
 
     # --- Footer (Visible on Analysis Page as well) ---
     st.markdown("<div style='margin-top: 5rem;'></div>", unsafe_allow_html=True)
+    # Reuse the same helper to ensure consistency
     st.markdown(_get_footer_html(), unsafe_allow_html=True)
 
 if __name__ == "__main__":
