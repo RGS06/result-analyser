@@ -307,6 +307,7 @@ def _show_header() -> bool:
         """
         <div class="hero-header fade-in">
             <h1 class="hero-title">VTU Results Analytics</h1>
+            <p class="hero-subtitle">Advanced Performance Intelligence for Departments</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -785,19 +786,72 @@ def main():
         ac1, ac2, ac3 = st.columns(3)
         
         with ac1:
-            # Section Summary (One sheet per section)
+            # ---------------- NEW FEATURE: Detailed Section Report ----------------
             if "Section" in per_student.columns:
                 try:
                     output = io.BytesIO()
                     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                         unique_sections = sorted(per_student["Section"].dropna().unique())
                         for sec in unique_sections:
-                            sec_df = per_student[per_student["Section"] == sec]
+                            # 1. Filter students in this section
+                            sec_students = per_student[per_student["Section"] == sec].copy()
+                            sec_usns = sec_students['USN'].unique()
+                            
+                            # 2. Get detailed marks for these students
+                            # Pivot the raw data to get Subject-wise Internal, External, Total
+                            # We want columns like: [Subject1_Int, Subject1_Ext, Subject1_Tot, Subject2_Int...]
+                            
+                            # Filter raw data for this section
+                            raw_sec_data = filtered[filtered["USN"].isin(sec_usns)]
+                            
+                            # Create Pivot Table
+                            pivot_marks = raw_sec_data.pivot_table(
+                                index='USN', 
+                                columns=config['subject_code_col'], 
+                                values=['Internal', 'External', 'Total'],
+                                aggfunc='first'
+                            )
+                            
+                            # Flatten columns (e.g. ('Internal', '18CS51') -> '18CS51_Internal')
+                            # Swap levels to group by Subject first
+                            pivot_marks = pivot_marks.swaplevel(0, 1, axis=1).sort_index(axis=1)
+                            pivot_marks.columns = [f"{c[0]} {c[1]}" for c in pivot_marks.columns]
+                            
+                            # 3. Merge with Student Basic Info & SGPA
+                            final_sheet = sec_students[['USN', 'Name', 'SGPA', 'Status']].merge(
+                                pivot_marks, on='USN', how='left'
+                            )
+                            
+                            # 4. Calculate Grand Total
+                            # Identify 'Total' columns for summation
+                            total_cols = [c for c in final_sheet.columns if " Total" in c]
+                            # Ensure numeric
+                            for tc in total_cols:
+                                final_sheet[tc] = pd.to_numeric(final_sheet[tc], errors='coerce').fillna(0)
+                            
+                            final_sheet['Grand Total'] = final_sheet[total_cols].sum(axis=1)
+                            
+                            # Move Grand Total before SGPA for better readability
+                            cols = list(final_sheet.columns)
+                            cols.remove('Grand Total')
+                            # Insert before SGPA
+                            sgpa_idx = cols.index('SGPA')
+                            cols.insert(sgpa_idx, 'Grand Total')
+                            final_sheet = final_sheet[cols]
+
                             safe_name = f"Sec_{sec}"[:31].replace(':','')
-                            sec_df.to_excel(writer, sheet_name=safe_name, index=False)
+                            final_sheet.to_excel(writer, sheet_name=safe_name, index=False)
+                            
                     output.seek(0)
-                    st.download_button("📑 Section Student Lists", data=output, file_name="Section_Students.xlsx", mime="application/vnd.ms-excel")
-                except: st.error("Error generating report")
+                    st.download_button(
+                        "📑 Detailed Section Report (Excel)", 
+                        data=output, 
+                        file_name="Detailed_Section_Report.xlsx", 
+                        mime="application/vnd.ms-excel",
+                        help="Detailed breakdown: Internal, External, Total for every subject + Grand Total + SGPA."
+                    )
+                except Exception as e:
+                    st.error(f"Error generating report: {e}")
             else: st.caption("No Section Data")
 
         with ac2:
