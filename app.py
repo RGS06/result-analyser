@@ -3,10 +3,9 @@ import os
 import textwrap
 import streamlit as st
 import pandas as pd
-from typing import Tuple, Dict
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import numpy as np
 
 # ==========================================
 # 1. HELPER FUNCTIONS (Logic Core)
@@ -23,13 +22,21 @@ def parse_vtu_results(file) -> pd.DataFrame:
         else:
             return pd.DataFrame() 
         
-        # Normalize column names
+        # Normalize column names (strip spaces, title case)
         df.columns = [str(c).strip().title() for c in df.columns]
         
         # Standardize key column names
         rename_map = {
-            "Usn": "USN", "Sub Code": "Subject Code", "Sub Name": "Subject Name",
-            "Int": "Internal", "Ext": "External", "Tot": "Total", "Res": "Result", "Sec": "Section"
+            "Usn": "USN", 
+            "Sub Code": "Subject Code", 
+            "Sub Name": "Subject Name",
+            "Student Name": "Name",  # FIXED: Handle 'Student Name'
+            "Name Of Student": "Name", # FIXED: Handle variations
+            "Int": "Internal", 
+            "Ext": "External", 
+            "Tot": "Total", 
+            "Res": "Result", 
+            "Sec": "Section"
         }
         df = df.rename(columns=rename_map)
         
@@ -51,6 +58,7 @@ def compute_student_status(df):
     grouped = df.groupby("USN")
     
     for usn, group in grouped:
+        # FIXED: Use .get() to avoid KeyError if Name is missing
         name = group["Name"].iloc[0] if "Name" in group.columns else "Unknown"
         section = group["Section"].iloc[0] if "Section" in group.columns else "N/A"
         
@@ -251,7 +259,7 @@ def _default_config():
     }
 
 def check_dependencies():
-    pass # Not strictly needed if running locally or via pip install
+    pass 
 
 # ==========================================
 # 3. MAIN APP LOGIC
@@ -392,15 +400,21 @@ def main():
             toppers = sub_df.sort_values("Total", ascending=False).head(10)
             if not toppers.empty:
                 top1 = toppers.iloc[0]
+                
+                # FIXED: Check Name column existence to prevent KeyError
+                t_name = top1.get("Name", "Unknown")
+                t_usn = top1.get("USN", "Unknown")
+                t_score = int(top1.get("Total", 0))
+                
                 tc1, tc2 = st.columns([1, 2])
                 with tc1:
                     st.markdown(f"""
                     <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(15, 23, 42, 0.6)); border: 2px solid #fbbf24; border-radius: 16px; padding: 2rem; text-align: center;">
                         <div style="font-size: 3rem;">🏆</div>
                         <div style="color:#fbbf24; font-weight:bold; margin:0.5rem 0;">SUBJECT TOPPER</div>
-                        <div style="color:white; font-size:1.2rem; font-weight:bold;">{top1['Name']}</div>
-                        <div style="color:#94a3b8; font-size:0.9rem;">{top1['USN']}</div>
-                        <div style="margin-top:1rem; background:rgba(251,191,36,0.2); color:#fbbf24; padding:0.5rem; border-radius:20px; font-weight:bold;">{int(top1['Total'])} Marks</div>
+                        <div style="color:white; font-size:1.2rem; font-weight:bold;">{t_name}</div>
+                        <div style="color:#94a3b8; font-size:0.9rem;">{t_usn}</div>
+                        <div style="margin-top:1rem; background:rgba(251,191,36,0.2); color:#fbbf24; padding:0.5rem; border-radius:20px; font-weight:bold;">{t_score} Marks</div>
                     </div>
                     """, unsafe_allow_html=True)
                 with tc2:
@@ -413,7 +427,7 @@ def main():
     with st.expander("🔽 Advanced Export Options", expanded=True):
         ec1, ec2, ec3 = st.columns(3)
         with ec1:
-            # ---------------- NEW FEATURE: Detailed Section Report ----------------
+            # Detailed Section Report
             if "Section" in per_student.columns:
                 try:
                     out = io.BytesIO()
@@ -422,8 +436,10 @@ def main():
                             sec_usns = per_student[per_student["Section"] == sec]["USN"]
                             raw_sec = df[df["USN"].isin(sec_usns)]
                             
-                            # Pivot data to get Subject columns
+                            # Pivot raw data to get Subject-wise Internal, External, Total
                             pivot = raw_sec.pivot_table(index="USN", columns="Subject Code", values=["Internal", "External", "Total"], aggfunc="first")
+                            
+                            # Flatten MultiIndex columns
                             pivot = pivot.swaplevel(0, 1, axis=1).sort_index(axis=1)
                             pivot.columns = [f"{c[0]} {c[1]}" for c in pivot.columns]
                             
@@ -434,7 +450,7 @@ def main():
                             tot_cols = [c for c in final.columns if " Total" in c]
                             final["Grand Total"] = final[tot_cols].sum(axis=1)
                             
-                            # Reorder to put Grand Total before SGPA
+                            # Reorder Columns
                             cols = list(final.columns)
                             cols.remove('Grand Total')
                             sgpa_idx = cols.index('SGPA')
@@ -448,7 +464,7 @@ def main():
             else: st.caption("No Section info")
 
         with ec2:
-            # Broadsheet
+            # Broadsheet Matrix (Simplified)
             if "Section" in df.columns:
                 try:
                     out_b = io.BytesIO()
