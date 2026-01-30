@@ -247,7 +247,6 @@ def _show_header() -> bool:
     st.markdown("""
         <div style="text-align: center; padding: 3rem 1rem; margin-bottom: 3rem; background: radial-gradient(circle at center, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0) 70%); border-bottom: 1px solid #334155;">
             <h1 style="font-size: 3.5rem; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;">VTU Results Analytics</h1>
-            <p style="font-size: 1.2rem; color: #94a3b8;">Advanced Performance Intelligence for Departments</p>
         </div>
     """, unsafe_allow_html=True)
     
