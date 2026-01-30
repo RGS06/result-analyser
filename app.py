@@ -25,27 +25,25 @@ def parse_vtu_results(file) -> pd.DataFrame:
         # Normalize column names (strip spaces, title case)
         df.columns = [str(c).strip().title() for c in df.columns]
         
-        # Standardize key column names
+        # Standardize key column names (Handle variations)
         rename_map = {
             "Usn": "USN", 
             "Sub Code": "Subject Code", 
             "Sub Name": "Subject Name",
-            "Student Name": "Name", 
-            "Name Of Student": "Name",
-            "Int": "Internal", "Cie": "Internal", "I.A.": "Internal", # Handle variants
-            "Ext": "External", "See": "External", "Sem End Exam": "External",
-            "Tot": "Total", 
+            "Student Name": "Name", "Name Of Student": "Name", "Student_Name": "Name",
+            "Int": "Internal", "Cie": "Internal", "I.A.": "Internal", "Ia": "Internal",
+            "Ext": "External", "See": "External", "Sem End Exam": "External", "Exam": "External",
+            "Tot": "Total", "Max": "Total",
             "Res": "Result", 
             "Sec": "Section"
         }
         df = df.rename(columns=rename_map)
         
-        # --- FIXED: Ensure critical columns exist to prevent KeyError ---
+        # Ensure critical columns exist (fill with 0 if missing to prevent Export crash)
         for col in ["Internal", "External", "Total"]:
             if col not in df.columns:
-                df[col] = 0 # Fill with 0 if missing
+                df[col] = 0
             else:
-                # Convert to numeric if exists
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
                 
         return df
@@ -454,7 +452,7 @@ def main():
                             tot_cols = [c for c in final.columns if " Total" in c]
                             final["Grand Total"] = final[tot_cols].sum(axis=1)
                             
-                            # Reorder to put Grand Total before SGPA
+                            # Reorder Columns
                             cols = list(final.columns)
                             cols.remove('Grand Total')
                             sgpa_idx = cols.index('SGPA')
