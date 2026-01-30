@@ -30,20 +30,24 @@ def parse_vtu_results(file) -> pd.DataFrame:
             "Usn": "USN", 
             "Sub Code": "Subject Code", 
             "Sub Name": "Subject Name",
-            "Student Name": "Name",  # FIXED: Handle 'Student Name'
-            "Name Of Student": "Name", # FIXED: Handle variations
-            "Int": "Internal", 
-            "Ext": "External", 
+            "Student Name": "Name", 
+            "Name Of Student": "Name",
+            "Int": "Internal", "Cie": "Internal", "I.A.": "Internal", # Handle variants
+            "Ext": "External", "See": "External", "Sem End Exam": "External",
             "Tot": "Total", 
             "Res": "Result", 
             "Sec": "Section"
         }
         df = df.rename(columns=rename_map)
         
-        # Ensure numeric columns
+        # --- FIXED: Ensure critical columns exist to prevent KeyError ---
         for col in ["Internal", "External", "Total"]:
-            if col in df.columns:
+            if col not in df.columns:
+                df[col] = 0 # Fill with 0 if missing
+            else:
+                # Convert to numeric if exists
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                
         return df
     except Exception as e:
         st.error(f"Error parsing file: {e}")
@@ -58,7 +62,7 @@ def compute_student_status(df):
     grouped = df.groupby("USN")
     
     for usn, group in grouped:
-        # FIXED: Use .get() to avoid KeyError if Name is missing
+        # Use .get to safely retrieve Name/Section
         name = group["Name"].iloc[0] if "Name" in group.columns else "Unknown"
         section = group["Section"].iloc[0] if "Section" in group.columns else "N/A"
         
@@ -436,7 +440,7 @@ def main():
                             sec_usns = per_student[per_student["Section"] == sec]["USN"]
                             raw_sec = df[df["USN"].isin(sec_usns)]
                             
-                            # Pivot raw data to get Subject-wise Internal, External, Total
+                            # Pivot data to get Subject columns
                             pivot = raw_sec.pivot_table(index="USN", columns="Subject Code", values=["Internal", "External", "Total"], aggfunc="first")
                             
                             # Flatten MultiIndex columns
@@ -450,7 +454,7 @@ def main():
                             tot_cols = [c for c in final.columns if " Total" in c]
                             final["Grand Total"] = final[tot_cols].sum(axis=1)
                             
-                            # Reorder Columns
+                            # Reorder to put Grand Total before SGPA
                             cols = list(final.columns)
                             cols.remove('Grand Total')
                             sgpa_idx = cols.index('SGPA')
