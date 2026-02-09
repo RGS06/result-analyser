@@ -433,122 +433,197 @@ def main():
                 with tc2:
                     st.dataframe(toppers[["USN", "Name", "Total", "Result"]].reset_index(drop=True), use_container_width=True)
 
-    # Exports
+        # Exports
     st.markdown("<div style='margin-top: 3rem; border-top: 1px solid #334155; margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
     st.markdown("### 💾 Exports")
-    
+
     with st.expander("🔽 Advanced Export Options", expanded=True):
         ec1, ec2, ec3 = st.columns(3)
+
+        # --------------------------------------------------
+        # 1️⃣ Detailed Section Report
+        # --------------------------------------------------
         with ec1:
-            # Detailed Section Report
-           if "Section" in per_student.columns:
-    try:
-        import io
-        import pandas as pd
+            if "Section" in per_student.columns:
+                try:
+                    out = io.BytesIO()
 
-        # 🔥 Ensure numeric columns before pivot
-        for col in ["Internal", "External", "Total"]:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+                    # Ensure numeric
+                    for col in ["Internal", "External", "Total"]:
+                        df[col] = pd.to_numeric(df[col], errors="coerce")
 
-        # Optional: replace NaN with 0 (only if you want)
-        df[["Internal", "External", "Total"]] = df[["Internal", "External", "Total"]].fillna(0)
+                    df[["Internal", "External", "Total"]] = df[
+                        ["Internal", "External", "Total"]
+                    ].fillna(0)
 
-        out = io.BytesIO()
+                    with pd.ExcelWriter(out, engine="xlsxwriter") as writer:
+                        for sec in sorted(per_student["Section"].dropna().unique()):
+                            sec_usns = per_student[
+                                per_student["Section"] == sec
+                            ]["USN"]
 
-        with pd.ExcelWriter(out, engine='xlsxwriter') as writer:
+                            raw_sec = df[df["USN"].isin(sec_usns)]
 
-            for sec in sorted(per_student["Section"].dropna().unique()):
+                            pivot = raw_sec.pivot_table(
+                                index="USN",
+                                columns="Subject Code",
+                                values=["Internal", "External", "Total"],
+                                aggfunc="first",
+                            )
 
-                # Filter students of that section
-                sec_usns = per_student[per_student["Section"] == sec]["USN"]
-                raw_sec = df[df["USN"].isin(sec_usns)]
+                            pivot = (
+                                pivot.swaplevel(0, 1, axis=1)
+                                .sort_index(axis=1)
+                            )
 
-                # 🔹 Pivot subject-wise marks
-                pivot = raw_sec.pivot_table(
-                    index="USN",
-                    columns="Subject Code",
-                    values=["Internal", "External", "Total"],
-                    aggfunc="first"
-                )
+                            pivot.columns = [
+                                f"{c[0]} {c[1]}" for c in pivot.columns
+                            ]
 
-                # 🔹 Flatten MultiIndex columns
-                pivot = pivot.swaplevel(0, 1, axis=1).sort_index(axis=1)
-                pivot.columns = [f"{c[0]} {c[1]}" for c in pivot.columns]
+                            final = (
+                                per_student[
+                                    per_student["Section"] == sec
+                                ][["USN", "Name", "SGPA", "Status"]]
+                                .merge(pivot, on="USN", how="left")
+                            )
 
-                # 🔹 Merge with student summary info
-                final = (
-                    per_student[per_student["Section"] == sec][
-                        ["USN", "Name", "SGPA", "Status"]
-                    ]
-                    .merge(pivot, on="USN", how="left")
-                )
+                            tot_cols = [
+                                c for c in final.columns if " Total" in c
+                            ]
+                            final["Grand Total"] = final[tot_cols].sum(axis=1)
 
-                # 🔹 Calculate Grand Total
-                tot_cols = [c for c in final.columns if " Total" in c]
-                final["Grand Total"] = final[tot_cols].sum(axis=1)
+                            cols = list(final.columns)
+                            cols.remove("Grand Total")
+                            sgpa_idx = cols.index("SGPA")
+                            cols.insert(sgpa_idx, "Grand Total")
+                            final = final[cols]
 
-                # 🔹 Reorder columns (Grand Total before SGPA)
-                cols = list(final.columns)
-                cols.remove("Grand Total")
-                sgpa_idx = cols.index("SGPA")
-                cols.insert(sgpa_idx, "Grand Total")
-                final = final[cols]
+                            final.to_excel(
+                                writer,
+                                sheet_name=f"Sec_{sec}",
+                                index=False,
+                            )
 
-                # 🔹 Write to Excel sheet
-                final.to_excel(writer, sheet_name=f"Sec_{sec}", index=False)
+                    out.seek(0)
 
-        out.seek(0)
+                    st.download_button(
+                        "📑 Detailed Section Report (Excel)",
+                        out,
+                        "Detailed_Section_Report.xlsx",
+                        "application/vnd.ms-excel",
+                    )
 
-        st.download_button(
-            "📑 Detailed Section Report (Excel)",
-            out,
-            "Detailed_Section_Report.xlsx",
-            "application/vnd.ms-excel"
-        )
+                except Exception as e:
+                    st.error(f"Error: {e}")
+            else:
+                st.caption("No Section info")
 
-    except Exception as e:
-        st.error(f"Error: {e}")
-
-else:
-    st.caption("No Section info")
-
-
+        # --------------------------------------------------
+        # 2️⃣ Result Matrix
+        # --------------------------------------------------
         with ec2:
-            # Broadsheet Matrix (Simplified)
             if "Section" in df.columns:
                 try:
                     out_b = io.BytesIO()
-                    with pd.ExcelWriter(out_b, engine='xlsxwriter') as writer:
+
+                    with pd.ExcelWriter(out_b, engine="xlsxwriter") as writer:
                         for sec in sorted(df["Section"].dropna().unique()):
                             sec_raw = df[df["Section"] == sec]
-                            piv = sec_raw.pivot_table(index=["USN", "Name"], columns="Subject Code", values=["Total", "Result"], aggfunc="first")
-                            piv = piv.swaplevel(0, 1, axis=1).sort_index(axis=1)
-                            piv.columns = [f"{c[0]}_{c[1]}" for c in piv.columns]
-                            piv.to_excel(writer, sheet_name=f"Matrix_{sec}")
+
+                            piv = sec_raw.pivot_table(
+                                index=["USN", "Name"],
+                                columns="Subject Code",
+                                values=["Total", "Result"],
+                                aggfunc="first",
+                            )
+
+                            piv = (
+                                piv.swaplevel(0, 1, axis=1)
+                                .sort_index(axis=1)
+                            )
+
+                            piv.columns = [
+                                f"{c[0]}_{c[1]}" for c in piv.columns
+                            ]
+
+                            piv.to_excel(
+                                writer,
+                                sheet_name=f"Matrix_{sec}",
+                            )
+
                     out_b.seek(0)
-                    st.download_button("📉 Result Matrix (Excel)", out_b, "Result_Matrix.xlsx", "application/vnd.ms-excel")
-                except Exception as e: st.error(f"Error: {e}")
-        
+
+                    st.download_button(
+                        "📉 Result Matrix (Excel)",
+                        out_b,
+                        "Result_Matrix.xlsx",
+                        "application/vnd.ms-excel",
+                    )
+
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+        # --------------------------------------------------
+        # 3️⃣ Section Subject Stats
+        # --------------------------------------------------
         with ec3:
-             # Section Subject Stats
             if "Section" in df.columns:
                 try:
                     out_s = io.BytesIO()
-                    with pd.ExcelWriter(out_s, engine='xlsxwriter') as writer:
+
+                    with pd.ExcelWriter(out_s, engine="xlsxwriter") as writer:
                         for sec in sorted(df["Section"].dropna().unique()):
                             sec_raw = df[df["Section"] == sec]
-                            stats = sec_raw.groupby(["Subject Code", "Subject Name"]).agg(
-                                Total=('USN', 'count'),
-                                Absent=('Result', lambda x: x.astype(str).str.upper().isin(["A", "ABSENT"]).sum()),
-                                Fail=('Result', lambda x: x.astype(str).str.upper().isin(["F", "FAIL"]).sum())
+
+                            stats = sec_raw.groupby(
+                                ["Subject Code", "Subject Name"]
+                            ).agg(
+                                Total=("USN", "count"),
+                                Absent=(
+                                    "Result",
+                                    lambda x: x.astype(str)
+                                    .str.upper()
+                                    .isin(["A", "ABSENT"])
+                                    .sum(),
+                                ),
+                                Fail=(
+                                    "Result",
+                                    lambda x: x.astype(str)
+                                    .str.upper()
+                                    .isin(["F", "FAIL"])
+                                    .sum(),
+                                ),
                             ).reset_index()
-                            stats["Appeared"] = stats["Total"] - stats["Absent"]
-                            stats["Passed"] = stats["Appeared"] - stats["Fail"]
-                            stats["Pass%"] = (stats["Passed"] / stats["Appeared"].replace(0, np.nan) * 100).fillna(0).round(2)
-                            stats.to_excel(writer, sheet_name=f"Stats_{sec}", index=False)
+
+                            stats["Appeared"] = (
+                                stats["Total"] - stats["Absent"]
+                            )
+                            stats["Passed"] = (
+                                stats["Appeared"] - stats["Fail"]
+                            )
+                            stats["Pass%"] = (
+                                stats["Passed"]
+                                / stats["Appeared"].replace(0, np.nan)
+                                * 100
+                            ).fillna(0).round(2)
+
+                            stats.to_excel(
+                                writer,
+                                sheet_name=f"Stats_{sec}",
+                                index=False,
+                            )
+
                     out_s.seek(0)
-                    st.download_button("📊 Section Subject Stats", out_s, "Section_Subject_Stats.xlsx", "application/vnd.ms-excel")
-                except Exception as e: st.error(f"Error: {e}")
+
+                    st.download_button(
+                        "📊 Section Subject Stats",
+                        out_s,
+                        "Section_Subject_Stats.xlsx",
+                        "application/vnd.ms-excel",
+                    )
+
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
     st.markdown("<div style='margin-top: 5rem;'></div>", unsafe_allow_html=True)
     st.markdown(_get_footer_html(), unsafe_allow_html=True)
