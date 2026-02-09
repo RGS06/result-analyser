@@ -326,6 +326,18 @@ def main():
         "BNSK559": 0,
         "BCS586": 2,
         "BCS508": 2
+
+         # -------- 7th Semester --------
+    "BCS701": 4,
+    "BCS702": 4,
+    "BCS703": 4,
+    "BCS786": 6, 
+    "BME755C": 3,
+    "BCS714D": 3,
+    "BEC755A": 3,
+    "BCS714B": 3,
+    "BCV755B": 3,
+    "BME755A": 3
     }
     
     per_student = compute_sgpa(per_student, df, syllabus_credits)
@@ -429,40 +441,77 @@ def main():
         ec1, ec2, ec3 = st.columns(3)
         with ec1:
             # Detailed Section Report
-            if "Section" in per_student.columns:
-                try:
-                    out = io.BytesIO()
-                    with pd.ExcelWriter(out, engine='xlsxwriter') as writer:
-                        for sec in sorted(per_student["Section"].dropna().unique()):
-                            sec_usns = per_student[per_student["Section"] == sec]["USN"]
-                            raw_sec = df[df["USN"].isin(sec_usns)]
-                            
-                            # Pivot data to get Subject columns
-                            pivot = raw_sec.pivot_table(index="USN", columns="Subject Code", values=["Internal", "External", "Total"], aggfunc="first")
-                            
-                            # Flatten MultiIndex columns
-                            pivot = pivot.swaplevel(0, 1, axis=1).sort_index(axis=1)
-                            pivot.columns = [f"{c[0]} {c[1]}" for c in pivot.columns]
-                            
-                            # Merge with basic info
-                            final = per_student[per_student["Section"]==sec][["USN", "Name", "SGPA", "Status"]].merge(pivot, on="USN", how="left")
-                            
-                            # Calculate Grand Total
-                            tot_cols = [c for c in final.columns if " Total" in c]
-                            final["Grand Total"] = final[tot_cols].sum(axis=1)
-                            
-                            # Reorder Columns
-                            cols = list(final.columns)
-                            cols.remove('Grand Total')
-                            sgpa_idx = cols.index('SGPA')
-                            cols.insert(sgpa_idx, 'Grand Total')
-                            final = final[cols]
-                            
-                            final.to_excel(writer, sheet_name=f"Sec_{sec}", index=False)
-                    out.seek(0)
-                    st.download_button("📑 Detailed Section Report (Excel)", out, "Detailed_Section_Report.xlsx", "application/vnd.ms-excel")
-                except Exception as e: st.error(f"Error: {e}")
-            else: st.caption("No Section info")
+           if "Section" in per_student.columns:
+    try:
+        import io
+        import pandas as pd
+
+        # 🔥 Ensure numeric columns before pivot
+        for col in ["Internal", "External", "Total"]:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+        # Optional: replace NaN with 0 (only if you want)
+        df[["Internal", "External", "Total"]] = df[["Internal", "External", "Total"]].fillna(0)
+
+        out = io.BytesIO()
+
+        with pd.ExcelWriter(out, engine='xlsxwriter') as writer:
+
+            for sec in sorted(per_student["Section"].dropna().unique()):
+
+                # Filter students of that section
+                sec_usns = per_student[per_student["Section"] == sec]["USN"]
+                raw_sec = df[df["USN"].isin(sec_usns)]
+
+                # 🔹 Pivot subject-wise marks
+                pivot = raw_sec.pivot_table(
+                    index="USN",
+                    columns="Subject Code",
+                    values=["Internal", "External", "Total"],
+                    aggfunc="first"
+                )
+
+                # 🔹 Flatten MultiIndex columns
+                pivot = pivot.swaplevel(0, 1, axis=1).sort_index(axis=1)
+                pivot.columns = [f"{c[0]} {c[1]}" for c in pivot.columns]
+
+                # 🔹 Merge with student summary info
+                final = (
+                    per_student[per_student["Section"] == sec][
+                        ["USN", "Name", "SGPA", "Status"]
+                    ]
+                    .merge(pivot, on="USN", how="left")
+                )
+
+                # 🔹 Calculate Grand Total
+                tot_cols = [c for c in final.columns if " Total" in c]
+                final["Grand Total"] = final[tot_cols].sum(axis=1)
+
+                # 🔹 Reorder columns (Grand Total before SGPA)
+                cols = list(final.columns)
+                cols.remove("Grand Total")
+                sgpa_idx = cols.index("SGPA")
+                cols.insert(sgpa_idx, "Grand Total")
+                final = final[cols]
+
+                # 🔹 Write to Excel sheet
+                final.to_excel(writer, sheet_name=f"Sec_{sec}", index=False)
+
+        out.seek(0)
+
+        st.download_button(
+            "📑 Detailed Section Report (Excel)",
+            out,
+            "Detailed_Section_Report.xlsx",
+            "application/vnd.ms-excel"
+        )
+
+    except Exception as e:
+        st.error(f"Error: {e}")
+
+else:
+    st.caption("No Section info")
+
 
         with ec2:
             # Broadsheet Matrix (Simplified)
