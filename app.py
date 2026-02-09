@@ -27,16 +27,32 @@ def parse_vtu_results(file) -> pd.DataFrame:
         
         # Standardize key column names (Handle variations)
         rename_map = {
-            "Usn": "USN", 
-            "Sub Code": "Subject Code", 
-            "Sub Name": "Subject Name",
-            "Student Name": "Name", "Name Of Student": "Name", "Student_Name": "Name",
-            "Int": "Internal", "Cie": "Internal", "I.A.": "Internal", "Ia": "Internal",
-            "Ext": "External", "See": "External", "Sem End Exam": "External", "Exam": "External",
-            "Tot": "Total", "Max": "Total",
-            "Res": "Result", 
-            "Sec": "Section"
-        }
+    "Usn": "USN",
+    "Sub Code": "Subject Code",
+    "Sub Name": "Subject Name",
+    "Student Name": "Name",
+    "Name Of Student": "Name",
+    "Student_Name": "Name",
+
+    "Int": "Internal",
+    "Internal Marks": "Internal",
+    "Cie": "Internal",
+    "I.A.": "Internal",
+    "Ia": "Internal",
+
+    "Ext": "External",
+    "External Marks": "External",
+    "See": "External",
+    "Sem End Exam": "External",
+    "Exam": "External",
+
+    "Tot": "Total",
+    "Max": "Total",
+
+    "Res": "Result",
+    "Sec": "Section"
+}
+
         df = df.rename(columns=rename_map)
         
         # Ensure critical columns exist (fill with 0 if missing to prevent Export crash)
